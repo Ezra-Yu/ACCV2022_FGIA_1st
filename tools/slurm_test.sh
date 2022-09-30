@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export PYTHONPATH=`pwd`:$PYTHONPATH 
+
 set -x
 
 PARTITION=$1

@@ -1,4 +1,6 @@
 /data
 /work-dirs
+/work_dirs
 *.pth
 breakfile.log
+/tmp
