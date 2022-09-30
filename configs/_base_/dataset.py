@@ -42,7 +42,7 @@ test_pipeline = [
 ]
 
 train_dataloader = dict(
-    batch_size=16,
+    batch_size=128,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
@@ -55,7 +55,7 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=32,
+    batch_size=128,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
@@ -71,7 +71,7 @@ val_evaluator = dict(type='Accuracy', topk=(1, 5))
 # If you want standard test, please manually configure the test dataset
 test_dataloader = val_dataloader
 test_evaluator = dict(
-    batch_size=32,
+    batch_size=128,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
