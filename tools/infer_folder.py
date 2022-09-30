@@ -83,7 +83,7 @@ def main():
         for img_path in image_path_list
     ]
     model = init_model(cfg, args.checkpoint, device=get_device())
-    # model.CLASSES = [f"{i:0>4d}" for i in range(model.head.num_classes)]
+    CLASSES = [f"{i:0>4d}" for i in range(model.head.num_classes)]
 
     if args.launcher != 'none' and dist.is_distributed:
         model = MMDistributedDataParallel(
@@ -119,7 +119,7 @@ def main():
                         filename = Path(cls_data_sample.img_path).name,
                         pred_score = pred_score,
                         pred_label = pred_label,
-                        pred_class = model.CLASSES[pred_label])
+                        pred_class = CLASSES[pred_label])
                 result_list.append(result)
     for result in result_list:
         print(result)
