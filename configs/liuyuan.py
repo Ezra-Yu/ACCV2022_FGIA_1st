@@ -144,14 +144,7 @@ test_dataloader = dict(
         ann_file='/mnt/lustre/share_data/yuzhaohui/data/ACCV_workshop/meta/test.txt',
         data_prefix='testa',
         pipeline=[
-            dict(
-                type='LoadImageFromFile',
-                file_client_args=dict(
-                    backend='memcached',
-                    server_list_cfg=
-                    '/mnt/lustre/share/pymc/pcs_server_list.conf',
-                    client_cfg='/mnt/lustre/share/pymc/mc.conf',
-                    sys_path='/mnt/lustre/share/pymc')),
+            dict(type='LoadImageFromFile'),
             dict(
                 type='ResizeEdge',
                 scale=256,

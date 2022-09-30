@@ -30,9 +30,9 @@ def parse_args():
         help='the directory to save the file containing evaluation metrics')
     parser.add_argument('--out', help='the file to save results.')
     parser.add_argument(
-        '--out-keys', 
+        '--out-keys',
         nargs='+',
-        default=['filename', 'pred_class'], 
+        default=['filename', 'pred_class'],
         help='output path')
     parser.add_argument(
         '--cfg-options',
@@ -64,7 +64,7 @@ def main():
 
     # load config
     cfg = Config.fromfile(args.config)
-    cfg.env_cfg.dist_cfg = dict(type='gloo')
+    cfg.env_cfg.dist_cfg = dict(backend='gloo')
     cfg.launcher = args.launcher
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
@@ -123,7 +123,7 @@ def main():
                         pred_label = pred_label,
                         pred_class = CLASSES[pred_label])
                     result_list.append(result)
-    parts_result_list = dist.all_gather(result_list)
+    parts_result_list = dist.all_gather_object(result_list)
     all_results = []
     for part_result in parts_result_list:
         if isinstance(part_result, list):
@@ -131,9 +131,9 @@ def main():
                 all_results.append(res)
         else:
             all_results.append(part_result)
-    if dist.is_main_process():
-        for i, result in enumerate(all_results):
-            print(i, result)
+#    if dist.is_main_process():
+#        for i, result in enumerate(all_results):
+#            print(i, result)
     output_result(args, all_results)
 
 
@@ -143,7 +143,7 @@ def output_result(args, result_list):
         json.dump(result_list, open(args.out, 'w'))
     elif args.out and args.out.endswith(".csv"):
         import csv
-        with open(args.out, "w") as csvfile: 
+        with open(args.out, "w") as csvfile:
             writer = csv.writer(csvfile)
             # writer.writerow(args.out_keys)
             for result in result_list:
