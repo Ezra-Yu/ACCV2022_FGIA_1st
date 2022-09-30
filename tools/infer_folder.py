@@ -64,7 +64,7 @@ def main():
 
     # load config
     cfg = Config.fromfile(args.config)
-    cfg.env_cfg.dist_cfg = dict(type='gloo')
+    cfg.env_cfg.dist_cfg = dict(backend='gloo')
     cfg.launcher = args.launcher
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
@@ -123,7 +123,7 @@ def main():
                         pred_label = pred_label,
                         pred_class = CLASSES[pred_label])
                     result_list.append(result)
-    parts_result_list = dist.all_gather(result_list)
+    parts_result_list = dist.all_gather_object(result_list)
     all_results = []
     for part_result in parts_result_list:
         if isinstance(part_result, list):
