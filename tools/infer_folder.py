@@ -64,6 +64,7 @@ def main():
 
     # load config
     cfg = Config.fromfile(args.config)
+    cfg.env_cfg.dist_cfg = dict(type='gloo')
     cfg.launcher = args.launcher
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
@@ -82,6 +83,7 @@ def main():
         {'img_path': str(img_path), 'gt_label': int(-1)}
         for img_path in image_path_list
     ]
+    print(f"Total images number : {len(image_path_list)}")
     model = init_model(cfg, args.checkpoint, device=get_device())
     CLASSES = [f"{i:0>4d}" for i in range(model.head.num_classes)]
 
@@ -121,9 +123,12 @@ def main():
                         pred_label = pred_label,
                         pred_class = CLASSES[pred_label])
                 result_list.append(result)
-    for result in result_list:
-        print(result)
-    output_result(args, result_list)
+    
+    all_results = dist.all_gather(result_list)
+    if dist.is_main_process():
+        for result in all_results:
+            print(result)
+    output_result(args, all_results)
 
 
 def output_result(args, result_list):
