@@ -30,11 +30,6 @@ def parse_args():
         help='the directory to save the file containing evaluation metrics')
     parser.add_argument('--out', help='the file to save results.')
     parser.add_argument(
-        '--batch-size', 
-        type=int, 
-        default=16, 
-        help='the file to save results.')
-    parser.add_argument(
         '--out-keys', 
         nargs='+',
         default=['filename', 'pred_class'], 
@@ -95,18 +90,12 @@ def main():
             module=model,
             device_ids=[int(os.environ['LOCAL_RANK'])],)
 
-    sim_dataloader = dict(
-        pin_memory=True,
-        persistent_workers=True,
-        collate_fn=dict(type='default_collate'),
-        batch_size=args.batch_size,
-        num_workers=5,
-        dataset=dict(
+    sim_dataloader = cfg.test_dataloader
+    sim_dataloader.dataset=dict(
             type='CustomDataset',
             data_prefix=args.folder,
             pipeline=cfg.test_dataloader.dataset.pipeline,
-            _scope_='mmcls'),
-            sampler=dict(type='DefaultSampler', shuffle=False, _scope_='mmcls'))
+            _scope_='mmcls')
 
     with patch.object(CustomDataset, 'load_data_list', return_value=data_list):
         sim_loader = Runner.build_dataloader(sim_dataloader)
@@ -117,8 +106,7 @@ def main():
         count = 0
         with torch.no_grad():
             for data_batch in sim_loader:
-                data = model.data_preprocessor(data_batch, False)
-                batch_prediction = model.predict(**data)
+                batch_prediction = model.val_step(data_batch)
                 count +=1 
                 if count % 50 == 0:
                     print_log(f"[{count} / {iters}].....")
