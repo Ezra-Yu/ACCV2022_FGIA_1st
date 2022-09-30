@@ -26,5 +26,3 @@ model = dict(
         init_cfg=dict(type='Normal', layer='Linear', std=0.01))
 )
 
-
-
