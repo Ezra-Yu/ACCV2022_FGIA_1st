@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-export PYTHONPATH=`pwd`:$PYTHONPATH 
-
 set -x
 
 PARTITION=$1
@@ -12,7 +10,7 @@ FOLDER=$5
 GPUS=${GPUS:-8}
 GPUS_PER_NODE=${GPUS_PER_NODE:-8}
 CPUS_PER_TASK=${CPUS_PER_TASK:-5}
-PY_ARGS=${@:5}
+PY_ARGS=${@:6}
 SRUN_ARGS=${SRUN_ARGS:-""}
 
 PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
@@ -22,6 +20,6 @@ srun -p ${PARTITION} \
     --ntasks=${GPUS} \
     --ntasks-per-node=${GPUS_PER_NODE} \
     --cpus-per-task=${CPUS_PER_TASK} \
-    --kill-on-bad-exit=1 \ 
+    --kill-on-bad-exit=1 \
     ${SRUN_ARGS} \
     python -u tools/infer_folder.py ${CONFIG} ${CHECKPOINT} ${FOLDER} --out-keys filename pred_class --out result.csv --launcher="slurm" ${PY_ARGS}

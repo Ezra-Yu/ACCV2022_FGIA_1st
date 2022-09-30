@@ -114,12 +114,14 @@ def main():
         result_list = []
         world_size = dist.get_world_size()
         iters = math.ceil(len(sim_loader) // world_size)
+        count = 0
         with torch.no_grad():
-            for i, data_batch in enumerate(sim_loader):
+            for data_batch in sim_loader:
                 data = model.data_preprocessor(data_batch, False)
                 batch_prediction = model.predict(**data)
-                if i % 50 == 0:
-                    print_log(f"[{i} / {iters}].....")
+                count +=1 
+                if count % 50 == 0:
+                    print_log(f"[{count} / {iters}].....")
                 # forward the model
                 for cls_data_sample in batch_prediction:
                     cls_pred_label = cls_data_sample.pred_label
