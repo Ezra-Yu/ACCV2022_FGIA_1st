@@ -109,9 +109,9 @@ def main():
         with torch.no_grad():
             for data_batch in sim_loader:
                 batch_prediction = model.val_step(data_batch)
-                count +=1 
                 if count % 50 == 0:
                     print_log(f"[{count} / {iters}].....")
+                count +=1
                 # forward the model
                 for cls_data_sample in batch_prediction:
                     cls_pred_label = cls_data_sample.pred_label
@@ -122,12 +122,18 @@ def main():
                         pred_score = pred_score,
                         pred_label = pred_label,
                         pred_class = CLASSES[pred_label])
-                result_list.append(result)
-    
-    all_results = dist.all_gather(result_list)
+                    result_list.append(result)
+    parts_result_list = dist.all_gather(result_list)
+    all_results = []
+    for part_result in parts_result_list:
+        if isinstance(part_result, list):
+            for res in part_result:
+                all_results.append(res)
+        else:
+            all_results.append(part_result)
     if dist.is_main_process():
-        for result in all_results:
-            print(result)
+        for i, result in enumerate(all_results):
+            print(i, result)
     output_result(args, all_results)
 
 
