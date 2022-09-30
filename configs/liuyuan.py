@@ -1,4 +1,4 @@
-dataset_type = 'ImageNet'
+dataset_type = 'CustomDataset'
 data_preprocessor = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 bgr_mean = [103.53, 116.28, 123.675]
