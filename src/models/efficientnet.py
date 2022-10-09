@@ -26,4 +26,4 @@ class TimmEfficientNet(TIMMBackbone):
         x = self.timm_model.conv_head(x)
         x = self.timm_model.bn2(x)
         feats = self.timm_model.act2(x)
-        return feats
+        return (feats,)

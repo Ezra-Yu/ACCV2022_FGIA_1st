@@ -2,5 +2,10 @@
 /work-dirs
 /work_dirs
 *.pth
+*.csv
+*.json
 breakfile.log
 /tmp
+
+/__pycache__
+*.pyc

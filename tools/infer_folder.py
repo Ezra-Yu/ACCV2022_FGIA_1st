@@ -108,7 +108,8 @@ def main():
         count = 0
         with torch.no_grad():
             for data_batch in sim_loader:
-                batch_prediction = model.val_step(data_batch)
+                batch_prediction = model.test_step(data_batch)
+                # batch_prediction = model.test_step(data_batch)
                 if count % 50 == 0:
                     print_log(f"[{count} / {iters}].....")
                 count +=1

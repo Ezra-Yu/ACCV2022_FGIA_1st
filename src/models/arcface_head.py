@@ -196,9 +196,27 @@ class ArcFaceHead(BaseHead):
             torch.Tensor: features of samples.
         """
 
-        pre_logits = self.pre_logits(feats)
+        cls_logits = self.pre_logits(feats)
         if self.used == 'after':
-            pre_logits = self.s * self.norm_layer(pre_logits)
-            return pre_logits
+            cls_logits = self.s * self.norm_layer(cls_logits)
+        # The part can not be traced by torch.fx
+        predictions = self._get_predictions(cls_logits, data_samples)
+        return predictions
+
+    def _get_predictions(self, cls_score, data_samples):
+        """Post-process the output of head.
+        Including softmax and set ``pred_label`` of data samples.
+        """
+        pred_scores = F.softmax(cls_score, dim=1)
+        pred_labels = pred_scores.argmax(dim=1, keepdim=True).detach()
+
+        if data_samples is not None:
+            for data_sample, score, label in zip(data_samples, pred_scores, pred_labels):
+                 data_sample.set_pred_score(score).set_pred_label(label)
         else:
-            return pre_logits
+            data_samples = []
+            for score, label in zip(pred_scores, pred_labels):
+                data_samples.append(ClsDataSample().set_pred_score(score).set_pred_label(label))
+
+        return data_samples
+

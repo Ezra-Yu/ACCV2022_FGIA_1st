@@ -1,7 +1,8 @@
 # optimizer
 optim_wrapper = dict(
     optimizer=dict(
-        type='SGD', lr=0.0125, momentum=0.9, weight_decay=0.0001))
+        type='SGD', lr=0.001, momentum=0.9, weight_decay=0.001),
+    paramwise_cfg=dict(norm_decay_mult=0.0, bias_decay_mult=0.0,))
 
 # learning policy
 param_scheduler = [
@@ -11,15 +12,15 @@ param_scheduler = [
         start_factor=0.1,
         by_epoch=True,
         begin=0,
-        end=2,
+        end=1,
         # update by iter
         convert_to_iter_based=True),
     # main learning rate scheduler
     dict(
         type='CosineAnnealingLR',
-        T_max=95,
+        T_max=19,
         by_epoch=True,
-        begin=5,
+        begin=1,
         end=20,
     )
 ]

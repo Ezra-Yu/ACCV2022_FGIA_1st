@@ -22,7 +22,8 @@ model = dict(
         in_channels=1280,
         feature_norm=True,
         weight_norm=True,
+        used='after',
         loss = dict(type='CrossEntropyLoss', loss_weight=1.0),
-        init_cfg=dict(type='Normal', layer='Linear', std=0.01))
+        init_cfg=dict(type='Normal', layer='Linear', std=0.01)),
 )
 

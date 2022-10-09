@@ -42,7 +42,7 @@ test_pipeline = [
 ]
 
 train_dataloader = dict(
-    batch_size=128,
+    batch_size=32,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
@@ -55,7 +55,7 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=128,
+    batch_size=32,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
@@ -67,18 +67,24 @@ val_dataloader = dict(
     persistent_workers=True,
 )
 val_evaluator = dict(type='Accuracy', topk=(1, 5))
+test_evaluator=val_evaluator
+
+test_pipeline_ = [
+    dict(type='LoadImageFromFile'),
+    dict(type='Resize', scale=768),
+    dict(type='PackClsInputs'),
+]
 
 # If you want standard test, please manually configure the test dataset
-test_dataloader = val_dataloader
-test_evaluator = dict(
-    batch_size=128,
+test_dataloader = dict(
+    batch_size=32,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
         data_root='data/ACCV_workshop',
         ann_file='meta/test.txt',
         data_prefix='test',
-        pipeline=test_pipeline),
+        pipeline=test_pipeline_),
     sampler=dict(type='DefaultSampler', shuffle=False),
     persistent_workers=True,
 )
