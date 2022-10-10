@@ -23,8 +23,7 @@ model = dict(
         type='LinearClsHead',
         num_classes=5000,
         in_channels=1024,
-        loss=dict(
-            type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
+        loss=dict(type='LabelSmoothLoss', label_smooth_val=0.1, mode='multi_label'),
         init_cfg=[dict(type='TruncNormal', layer='Linear', std=2e-05)]),
     train_cfg=dict(augments=[
         dict(type='Mixup', alpha=0.8, num_classes=5000),
