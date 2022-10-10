@@ -22,4 +22,10 @@ srun -p ${PARTITION} \
     --cpus-per-task=${CPUS_PER_TASK} \
     --kill-on-bad-exit=1 \
     ${SRUN_ARGS} \
-    python -u tools/infer_folder.py ${CONFIG} ${CHECKPOINT} ${FOLDER} --out-keys filename pred_class --out result.csv --launcher="slurm" ${PY_ARGS}
+    python -u tools/infer_folder.py ${CONFIG} ${CHECKPOINT} ${FOLDER} --out-keys filename pred_class --out pred_results.csv --launcher="slurm" ${PY_ARGS}
+
+
+
+echo "Finish Inference........"
+zip pred_results.zip pred_results.csv
+

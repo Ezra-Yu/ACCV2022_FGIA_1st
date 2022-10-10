@@ -3,6 +3,7 @@ _base_ =[
     './_base_/default_runtime.py',
     './_base_/scheduler_vit.py'
 ]
+"""
 model = dict(
     type='ImageClassifier',
     backbone=dict(
@@ -32,6 +33,9 @@ model = dict(
     ]))
 
 """
+
+custom_imports = dict(imports=['src'], allow_failed_imports=False)
+
 model = dict(
     type='ImageClassifier',
     backbone=dict(
@@ -45,8 +49,7 @@ model = dict(
         final_norm=False,
         init_cfg=dict(
             type='Pretrained',
-            checkpoint=
-            'work_dirs/selfsup/mae_vit-large-p16_8xb512-amp-coslr-300e_in1k/epoch_300.pth',
+            checkpoint='~/accv/liuyuan/mae_webnat_pretrain/epoch_1600.pth',
             prefix='backbone.')),
     neck=None,
     head=dict(
@@ -58,4 +61,4 @@ model = dict(
         used='after',
         loss = dict(type='CrossEntropyLoss', loss_weight=1.0),
         init_cfg=dict(type='Normal', layer='Linear', std=0.01))
-"""
+)

@@ -16,7 +16,7 @@ train_pipeline = [
             server_list_cfg='/mnt/lustre/share/pymc/pcs_server_list.conf',
             client_cfg='/mnt/lustre/share/pymc/mc.conf',
             sys_path='/mnt/lustre/share/pymc')),
-    dict(type='Resize', scale=768),
+    dict(type='RandomResizedCrop', scale=448),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
         type='RandAugment',
@@ -37,13 +37,14 @@ test_pipeline = [
             server_list_cfg='/mnt/lustre/share/pymc/pcs_server_list.conf',
             client_cfg='/mnt/lustre/share/pymc/mc.conf',
             sys_path='/mnt/lustre/share/pymc')),
-    dict(type='Resize', scale=768),
+    dict(type='ResizeEdge', scale=460, edge='short'),
+    dict(type='CenterCrop', crop_size=448),
     dict(type='PackClsInputs'),
 ]
 
 train_dataloader = dict(
     batch_size=32,
-    num_workers=5,
+    num_workers=8,
     dataset=dict(
         type=dataset_type,
         data_root='data/ACCV_workshop',
@@ -55,8 +56,8 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=32,
-    num_workers=5,
+    batch_size=64,
+    num_workers=8,
     dataset=dict(
         type=dataset_type,
         data_root='data/ACCV_workshop',
@@ -71,14 +72,15 @@ test_evaluator=val_evaluator
 
 test_pipeline_ = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', scale=768),
+    dict(type='ResizeEdge', scale=460, edge='short'),
+    dict(type='CenterCrop', crop_size=448),
     dict(type='PackClsInputs'),
 ]
 
 # If you want standard test, please manually configure the test dataset
 test_dataloader = dict(
-    batch_size=32,
-    num_workers=5,
+    batch_size=64,
+    num_workers=8,
     dataset=dict(
         type=dataset_type,
         data_root='data/ACCV_workshop',

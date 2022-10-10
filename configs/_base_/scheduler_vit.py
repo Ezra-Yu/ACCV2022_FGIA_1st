@@ -1,13 +1,16 @@
+
+custom_imports = dict(imports=['mmselfsup.engine'], allow_failed_imports=False)
+
 optim_wrapper = dict(
     optimizer=dict(
         type='AdamW',
         lr=0.004,
         weight_decay=0.05,
+        model_type='vit',
         eps=1e-08,
         betas=(0.9, 0.999),
-        _scope_='mmcls',
-        model_type='vit',
-        layer_decay_rate=0.75),
+        layer_decay_rate=0.75,
+    ),
     paramwise_cfg=dict(
         norm_decay_mult=0.0,
         bias_decay_mult=0.0,
@@ -17,7 +20,8 @@ optim_wrapper = dict(
             '.cls_token': dict(decay_mult=0.0),
             '.pos_embed': dict(decay_mult=0.0)
         })),
-    constructor='mmselfsup.LearningRateDecayOptimWrapperConstructor')
+   constructor='mmselfsup.LearningRateDecayOptimWrapperConstructor'
+)
 param_scheduler = [
     dict(
         type='LinearLR',
