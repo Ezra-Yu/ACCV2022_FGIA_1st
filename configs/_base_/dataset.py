@@ -27,6 +27,14 @@ train_pipeline = [
         magnitude_std=0.5,
         hparams=dict(
             pad_val=[round(x) for x in bgr_mean])),
+    dict(
+        type='RandomErasing',
+        erase_prob=0.25,
+        mode='rand',
+        min_area_ratio=0.02,
+        max_area_ratio=0.3333333333333333,
+        fill_color=[103.53, 116.28, 123.675],
+        fill_std=[57.375, 57.12, 58.395]),
     dict(type='PackClsInputs'),
 ]
 
