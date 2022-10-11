@@ -29,3 +29,5 @@ srun -p ${PARTITION} \
 echo "Finish Inference........"
 zip pred_results.zip pred_results.csv
 
+# echo "Upload to s3 ceph........"
+# aws s3 cp pred_results.zip s3://ezra/

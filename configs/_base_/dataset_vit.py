@@ -10,13 +10,7 @@ data_preprocessor = dict(
 
 bgr_mean = data_preprocessor['mean'][::-1]
 train_pipeline = [
-    dict(
-        type='LoadImageFromFile',
-        file_client_args=dict(
-            backend='memcached',
-            server_list_cfg='/mnt/lustre/share/pymc/pcs_server_list.conf',
-            client_cfg='/mnt/lustre/share/pymc/mc.conf',
-            sys_path='/mnt/lustre/share/pymc')),
+    dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
         scale=224,
@@ -42,13 +36,7 @@ train_pipeline = [
     dict(type='PackClsInputs')
 ]
 test_pipeline = [
-    dict(
-        type='LoadImageFromFile',
-        file_client_args=dict(
-            backend='memcached',
-            server_list_cfg='/mnt/lustre/share/pymc/pcs_server_list.conf',
-            client_cfg='/mnt/lustre/share/pymc/mc.conf',
-            sys_path='/mnt/lustre/share/pymc')),
+    dict(type='LoadImageFromFile'),
     dict(
         type='ResizeEdge',
         scale=256,
@@ -61,7 +49,7 @@ test_pipeline = [
 
 train_dataloader = dict(
     batch_size=128,
-    num_workers=8,
+    num_workers=15,
     dataset=dict(
         type=dataset_type,
         data_root='data/ACCV_workshop',
@@ -74,7 +62,7 @@ train_dataloader = dict(
 
 val_dataloader = dict(
     batch_size=128,
-    num_workers=8,
+    num_workers=15,
     dataset=dict(
         type=dataset_type,
         data_root='data/ACCV_workshop',
@@ -85,19 +73,7 @@ val_dataloader = dict(
     persistent_workers=True,
 )
 
-test_dataloader = dict(
-    batch_size=128,
-    num_workers=5,
-    dataset=dict(
-        type=dataset_type,
-        data_root='data/ACCV_workshop',
-        ann_file='meta/test.txt',
-        data_prefix='test',
-        pipeline=test_pipeline),
-    sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
-)
-
+test_dataloader = val_dataloader
 
 val_evaluator = dict(type='Accuracy', topk=(1, 5), _scope_='mmcls')
 test_evaluator = val_evaluator

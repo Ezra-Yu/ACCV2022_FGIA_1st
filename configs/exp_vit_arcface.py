@@ -34,7 +34,7 @@ model = dict(
 
 """
 
-custom_imports = dict(imports=['src'], allow_failed_imports=False)
+custom_imports = dict(imports=['src', 'mmselfsup.engine' ], allow_failed_imports=False)
 
 model = dict(
     type='ImageClassifier',
@@ -55,7 +55,7 @@ model = dict(
     head=dict(
         type='ArcFaceHead',
         num_classes=5000,
-        in_channels=1280,
+        in_channels=1024,
         feature_norm=True,
         weight_norm=True,
         used='after',

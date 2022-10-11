@@ -3,6 +3,7 @@
 /work_dirs
 *.pth
 *.csv
+*.zip
 *.json
 breakfile.log
 /tmp

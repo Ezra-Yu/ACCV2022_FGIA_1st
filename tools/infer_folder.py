@@ -50,6 +50,10 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument(
+                '--tta',
+                action='store_true',
+                help='enable automatic-mixed-precision training')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -72,6 +76,10 @@ def main():
     if args.launcher != 'none' and not dist.is_distributed():
         dist_cfg: dict = cfg.env_cfg.get('dist_cfg', {})
         dist.init_dist(args.launcher, **dist_cfg)
+
+    if args.tta:
+        cfg.model.type = "TTAImageClassifier"
+        print("Using Flip TTA ......")
 
     folder = Path(args.folder)
     if folder.is_file():

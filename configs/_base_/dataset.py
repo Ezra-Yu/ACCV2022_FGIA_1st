@@ -78,23 +78,4 @@ val_dataloader = dict(
 val_evaluator = dict(type='Accuracy', topk=(1, 5))
 test_evaluator=val_evaluator
 
-test_pipeline_ = [
-    dict(type='LoadImageFromFile'),
-    dict(type='ResizeEdge', scale=460, edge='short'),
-    dict(type='CenterCrop', crop_size=448),
-    dict(type='PackClsInputs'),
-]
-
-# If you want standard test, please manually configure the test dataset
-test_dataloader = dict(
-    batch_size=64,
-    num_workers=8,
-    dataset=dict(
-        type=dataset_type,
-        data_root='data/ACCV_workshop',
-        ann_file='meta/test.txt',
-        data_prefix='test',
-        pipeline=test_pipeline_),
-    sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
-)
+test_dataloader = val_dataloader
