@@ -22,7 +22,7 @@ srun -p ${PARTITION} \
     --cpus-per-task=${CPUS_PER_TASK} \
     --kill-on-bad-exit=1 \
     ${SRUN_ARGS} \
-    python -u tools/infer_folder.py ${CONFIG} ${CHECKPOINT} ${FOLDER} --out-keys filename pred_class --out pred_results.csv --launcher="slurm" ${PY_ARGS}
+    python -u tools/infer_folder.py ${CONFIG} ${CHECKPOINT} ${FOLDER} --out-keys filename pred_class --out pred_results.csv --dump results.pkl --launcher="slurm" ${PY_ARGS}
 
 
 

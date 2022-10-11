@@ -29,6 +29,7 @@ def parse_args():
         'folder',
         help='the directory to save the file containing evaluation metrics')
     parser.add_argument('--out', help='the file to save results.')
+    parser.add_argument('--dump', default=None, help='dump to results.')
     parser.add_argument(
         '--out-keys',
         nargs='+',
@@ -124,10 +125,12 @@ def main():
                 # forward the model
                 for cls_data_sample in batch_prediction:
                     cls_pred_label = cls_data_sample.pred_label
+                    sources = cls_pred_label.score.cpu().numpy().list()
                     pred_score = torch.max(cls_pred_label.score).item()
                     pred_label = cls_pred_label.label.item()
                     result = dict(
                         filename = Path(cls_data_sample.img_path).name,
+                        sources = sources,
                         pred_score = pred_score,
                         pred_label = pred_label,
                         pred_class = CLASSES[pred_label])
@@ -140,9 +143,6 @@ def main():
                 all_results.append(res)
         else:
             all_results.append(part_result)
-#    if dist.is_main_process():
-#        for i, result in enumerate(all_results):
-#            print(i, result)
     output_result(args, all_results)
 
 
@@ -157,6 +157,13 @@ def output_result(args, result_list):
             # writer.writerow(args.out_keys)
             for result in result_list:
                 writer.writerow([result[k] for k in args.out_keys])
+        
+    if args.dump:
+        assert args.out.endswith(".pkl")
+        with open(args.dump, "w") as dumpfile:
+            import pickle
+            pickle.dump(result_list, dumpfile)
+
     return result_list
 
 
