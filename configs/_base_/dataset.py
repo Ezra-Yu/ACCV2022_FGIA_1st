@@ -10,13 +10,8 @@ data_preprocessor = dict(
 
 bgr_mean = data_preprocessor['mean'][::-1]
 train_pipeline = [
-    dict(type='LoadImageFromFile',
-         file_client_args=dict(
-            backend='memcached',
-            server_list_cfg='/mnt/lustre/share/pymc/pcs_server_list.conf',
-            client_cfg='/mnt/lustre/share/pymc/mc.conf',
-            sys_path='/mnt/lustre/share/pymc')),
-    dict(type='RandomResizedCrop', scale=448),
+    dict(type='LoadImageFromFile'),
+    dict(type='Resize', scale=768),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
         type='RandAugment',
@@ -39,24 +34,18 @@ train_pipeline = [
 ]
 
 test_pipeline = [
-    dict(type='LoadImageFromFile',
-        file_client_args=dict(
-            backend='memcached',
-            server_list_cfg='/mnt/lustre/share/pymc/pcs_server_list.conf',
-            client_cfg='/mnt/lustre/share/pymc/mc.conf',
-            sys_path='/mnt/lustre/share/pymc')),
-    dict(type='ResizeEdge', scale=460, edge='short'),
-    dict(type='CenterCrop', crop_size=448),
+    dict(type='LoadImageFromFile'),
+    dict(type='Resize', scale=768),
     dict(type='PackClsInputs'),
 ]
 
 train_dataloader = dict(
-    batch_size=32,
+    batch_size=16,
     num_workers=8,
     dataset=dict(
         type=dataset_type,
         data_root='data/ACCV_workshop',
-        ann_file='meta/train.txt',
+        ann_file='meta/full.txt',
         data_prefix='train',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -64,7 +53,7 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=64,
+    batch_size=32,
     num_workers=8,
     dataset=dict(
         type=dataset_type,

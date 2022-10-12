@@ -117,7 +117,10 @@ def main():
         count = 0
         with torch.no_grad():
             for data_batch in sim_loader:
-                batch_prediction = model.test_step(data_batch)
+                if isinstance(model, MMDistributedDataParallel):
+                    batch_prediction = model.module.test_step(data_batch)
+                else:
+                    batch_prediction = model.test_step(data_batch)
                 # batch_prediction = model.test_step(data_batch)
                 if count % 50 == 0:
                     print_log(f"[{count} / {iters}].....")
@@ -125,12 +128,12 @@ def main():
                 # forward the model
                 for cls_data_sample in batch_prediction:
                     cls_pred_label = cls_data_sample.pred_label
-                    sources = cls_pred_label.score.cpu().numpy().list()
+                    scores = cls_pred_label.score.cpu().numpy()
                     pred_score = torch.max(cls_pred_label.score).item()
                     pred_label = cls_pred_label.label.item()
                     result = dict(
                         filename = Path(cls_data_sample.img_path).name,
-                        sources = sources,
+                        scores = scores,
                         pred_score = pred_score,
                         pred_label = pred_label,
                         pred_class = CLASSES[pred_label])
@@ -157,10 +160,10 @@ def output_result(args, result_list):
             # writer.writerow(args.out_keys)
             for result in result_list:
                 writer.writerow([result[k] for k in args.out_keys])
-        
+    print(args.dump)
     if args.dump:
-        assert args.out.endswith(".pkl")
-        with open(args.dump, "w") as dumpfile:
+        assert args.dump.endswith(".pkl")
+        with open(args.dump, "wb") as dumpfile:
             import pickle
             pickle.dump(result_list, dumpfile)
 

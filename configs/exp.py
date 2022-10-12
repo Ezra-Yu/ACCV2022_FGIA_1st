@@ -19,6 +19,7 @@ model = dict(
     head=dict(
         type='ArcFaceHead',
         num_classes=5000,
+        # in_channels=5504,
         in_channels=1280,
         feature_norm=True,
         weight_norm=True,

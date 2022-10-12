@@ -7,10 +7,10 @@ from mmcls.models import ImageClassifier
 
 @MODELS.register_module()
 class TTAImageClassifier(ImageClassifier):
-    def __init__(self, tta=None, **kwargs):
+    def __init__(self, tta=True, **kwargs):
         super().__init__(**kwargs)
         self.tta = tta
-        
+
 
     def val_step(self, data: Union[tuple, dict, list]) -> list:
         """Gets the predictions of given data.
