@@ -56,9 +56,6 @@ model = dict(
         type='ArcFaceHead',
         num_classes=5000,
         in_channels=1024,
-        feature_norm=True,
-        weight_norm=True,
-        used='after',
         loss = dict(type='CrossEntropyLoss', loss_weight=1.0),
         init_cfg=dict(type='Normal', layer='Linear', std=0.01))
 )

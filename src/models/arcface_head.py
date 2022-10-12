@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import math
 from typing import List, Optional, Tuple
 
@@ -5,12 +6,24 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from mmcls.structures import ClsDataSample
 from mmcls.registry import MODELS
-from mmcls.models.heads.base_head import BaseHead
+from mmcls.structures import ClsDataSample
+from mmcls.models.heads.cls_head import ClsHead
 
 
 class NormLinear(nn.Linear):
+    """An enhanced linear layer, which could normalize the input and the linear
+    weight.
+    Args:
+        in_features (int): size of each input sample.
+        out_features (int): size of each output sample
+        bias (bool): Whether there is bias. If set to ``False``, the
+            layer will not learn an additive bias. Defaults to ``True``.
+        feature_norm (bool): Whether to normalize the input feature.
+            Defaults to ``True``.
+        weight_norm (bool):Whether to normalize the weight.
+            Defaults to ``True``.
+    """
 
     def __init__(self,
                  in_features: int,
@@ -34,7 +47,7 @@ class NormLinear(nn.Linear):
 
 
 @MODELS.register_module()
-class ArcFaceHead(BaseHead):
+class ArcFaceClsHead(ClsHead):
     """ArcFace classifier head.
     Args:
         num_classes (int): Number of categories excluding the background
@@ -44,15 +57,7 @@ class ArcFaceHead(BaseHead):
         m (float): Margin. Defaults to 0.5.
         easy_margin (bool): Avoid theta + m >= PI. Defaults to False.
         ls_eps (float): Label smoothing. Defaults to 0.
-        used (str): If used='after', it represents the vector after
-            the weight processing is used for prediction.
-            If used='before', it represents the vector before
-            the weight processing is used to get the feature vector.
         bias (bool): Whether to use bias in norm layer. Defaults to False.
-        feature_norm (bool): Whether to normalize feature in norm layer.
-            Defaults to True.
-        weight_norm (bool): Whether to normalize weight in norm layer.
-            Defaults to True.
         loss (dict): Config of classification loss. Defaults to
             ``dict(type='CrossEntropyLoss', loss_weight=1.0)``.
         init_cfg (dict, optional): the config to control the initialization.
@@ -66,14 +71,11 @@ class ArcFaceHead(BaseHead):
                  m: float = 0.50,
                  easy_margin: bool = False,
                  ls_eps: float = 0.0,
-                 used: str = 'before',
                  bias: bool = False,
-                 feature_norm: bool = True,
-                 weight_norm: bool = True,
                  loss: dict = dict(type='CrossEntropyLoss', loss_weight=1.0),
                  init_cfg: Optional[dict] = None):
 
-        super(ArcFaceHead, self).__init__(init_cfg=init_cfg)
+        super(ArcFaceClsHead, self).__init__(init_cfg=init_cfg)
         self.loss_module = MODELS.build(loss)
 
         self.in_channels = in_channels
@@ -87,18 +89,11 @@ class ArcFaceHead(BaseHead):
         self.m = m
         self.ls_eps = ls_eps
 
-        self.norm_layer = NormLinear(
-            in_features=in_channels,
-            out_features=num_classes,
-            bias=bias,
-            feature_norm=feature_norm,
-            weight_norm=weight_norm)
+        self.norm_linear = NormLinear(in_channels, num_classes, bias=bias)
 
         self.easy_margin = easy_margin
         self.th = math.cos(math.pi - m)
         self.mm = math.sin(math.pi - m) * m
-
-        self.used = used
 
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head.
@@ -106,11 +101,9 @@ class ArcFaceHead(BaseHead):
         feature of a backbone stage. In ``ArcFaceHead``, we just obtain the
         feature of the last stage.
         """
-        if isinstance(feats, tuple):
-            feats = feats[-1]
-            # The ArcFaceHead doesn't have other module, just return after
-            # unpacking.
-        return feats
+        # The ArcFaceHead doesn't have other module, just return after
+        # unpacking.
+        return feats[-1]
 
     def forward(self,
                 feats: Tuple[torch.Tensor],
@@ -120,10 +113,10 @@ class ArcFaceHead(BaseHead):
         pre_logits = self.pre_logits(feats)
 
         # cos=(a*b)/(||a||*||b||)
-        cosine = self.norm_layer(pre_logits)
+        cosine = self.norm_linear(pre_logits)
 
         if target is None:
-            return cosine
+            return self.s * cosine
 
         phi = torch.cos(torch.acos(cosine) + self.m)
 
@@ -143,10 +136,7 @@ class ArcFaceHead(BaseHead):
                        self.ls_eps) * one_hot + self.ls_eps / self.num_classes
 
         output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
-
-        output *= self.s
-
-        return output
+        return output * self.s
 
     def loss(self, feats: Tuple[torch.Tensor],
              data_samples: List[ClsDataSample], **kwargs) -> dict:
@@ -167,7 +157,7 @@ class ArcFaceHead(BaseHead):
             # Batch augmentation may convert labels to one-hot format scores.
             target = torch.stack([i.gt_label.score for i in data_samples])
         else:
-            target = torch.hstack([i.gt_label.label for i in data_samples])
+            target = torch.cat([i.gt_label.label for i in data_samples])
 
         # The part can be traced by torch.fx
         cls_score = self(feats, target)
@@ -179,44 +169,3 @@ class ArcFaceHead(BaseHead):
         losses['loss'] = loss
 
         return losses
-
-    def predict(self,
-                feats: Tuple[torch.Tensor],
-                data_samples: List[ClsDataSample] = None) -> torch.Tensor:
-        """Inference without augmentation.
-        Args:
-            feats (tuple[Tensor]): The features extracted from the backbone.
-                Multiple stage inputs are acceptable but only the last stage
-                will be used to classify. The shape of every item should be
-                ``(num_samples, num_classes)``.
-            data_samples (List[ClsDataSample], optional): The annotation
-                data of every samples. If not None, set ``pred_label`` of
-                the input data samples. Defaults to None.
-        Returns:
-            torch.Tensor: features of samples.
-        """
-
-        cls_logits = self.pre_logits(feats)
-        if self.used == 'after':
-            cls_logits = self.s * self.norm_layer(cls_logits)
-        # The part can not be traced by torch.fx
-        predictions = self._get_predictions(cls_logits, data_samples)
-        return predictions
-
-    def _get_predictions(self, cls_score, data_samples):
-        """Post-process the output of head.
-        Including softmax and set ``pred_label`` of data samples.
-        """
-        pred_scores = F.softmax(cls_score, dim=1)
-        pred_labels = pred_scores.argmax(dim=1, keepdim=True).detach()
-
-        if data_samples is not None:
-            for data_sample, score, label in zip(data_samples, pred_scores, pred_labels):
-                 data_sample.set_pred_score(score).set_pred_label(label)
-        else:
-            data_samples = []
-            for score, label in zip(pred_scores, pred_labels):
-                data_samples.append(ClsDataSample().set_pred_score(score).set_pred_label(label))
-
-        return data_samples
-

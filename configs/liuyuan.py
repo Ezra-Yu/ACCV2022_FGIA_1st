@@ -224,7 +224,7 @@ resume = True
 custom_imports = dict(imports=['src', 'mmselfsup.engine' ], allow_failed_imports=False)
 
 model = dict(
-    type='TTAImageClassifier',
+    type='ImageClassifier',
     backbone=dict(
         type='VisionTransformer',
         arch='large',
