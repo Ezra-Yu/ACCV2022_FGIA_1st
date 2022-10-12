@@ -5,6 +5,7 @@
 *.csv
 *.zip
 *.json
+*.pkl
 breakfile.log
 /tmp
 
