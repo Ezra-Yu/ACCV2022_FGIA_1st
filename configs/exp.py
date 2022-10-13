@@ -1,7 +1,7 @@
 _base_ =[
     './_base_/dataset.py',
     './_base_/default_runtime.py',
-    './_base_/scheduler.py'
+    './_base_/scheduler_50e.py'
 ]
 
 custom_imports = dict(imports=['src'], allow_failed_imports=False)
@@ -16,7 +16,7 @@ model = dict(
                 with_cp=True),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
-        type='ArcFaceHead',
+        type='ArcFaceClsHead',
         num_classes=5000,
         # in_channels=5504,
         in_channels=1280,

@@ -1,7 +1,7 @@
 _base_ =[
     './_base_/dataset_384.py',
     './_base_/default_runtime.py',
-    './_base_/scheduler_50e.py'
+    './_base_/scheduler_20e.py'
 ]
 
 custom_imports = dict(imports=['src'], allow_failed_imports=False)
@@ -13,7 +13,7 @@ model = dict(
                 pretrained=True),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
-        type='ArcFaceHead',
+        type='ArcFaceClsHead',
         num_classes=5000,
         in_channels=1280,
         loss = dict(type='CrossEntropyLoss', loss_weight=1.0),
