@@ -4,6 +4,8 @@ _base_ =[
     './_base_/scheduler20e.py'
 ]
 
+custom_imports = dict(imports=['src'], allow_failed_imports=False)
+
 # model settings
 model = dict(
     type='ImageClassifier',
