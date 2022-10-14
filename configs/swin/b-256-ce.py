@@ -29,8 +29,8 @@ model = dict(
         dict(type='Constant', layer='LayerNorm', val=1., bias=0.)
     ],
     train_cfg=dict(augments=[
-        dict(type='Mixup', alpha=0.8, num_classes=1000),
-        dict(type='CutMix', alpha=1.0, num_classes=1000)
+        dict(type='Mixup', alpha=0.8, num_classes=5000),
+        dict(type='CutMix', alpha=1.0, num_classes=5000)
     ]),
 )
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     x = torch.rand( (1, 3, 256, 256) )
     y = classifier(inputs=x)
     print(y.size())
-    
+
 
 
 
