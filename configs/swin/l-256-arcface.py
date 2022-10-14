@@ -1,7 +1,7 @@
 _base_ =[
     './_base_/dataset256.py',
     './_base_/default_runtime.py',
-    './_base_/scheduler20e.py'
+    './_base_/scheduler50e.py'
 ]
 
 custom_imports = dict(imports=['src'], allow_failed_imports=False)
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     x = torch.rand( (1, 3, 256, 256) )
     y = classifier(inputs=x)
     print(y.size())
-    
+
 
 
 

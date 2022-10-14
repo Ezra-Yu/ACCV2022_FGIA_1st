@@ -11,7 +11,7 @@ data_preprocessor = dict(
 bgr_mean = data_preprocessor['mean'][::-1]
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', scale=256, backend='pillow'),
+    dict(type='Resize', scale=384, backend='pillow'),
     # dict(type='RandomResizedCrop', scale=256, backend='pillow'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
@@ -36,14 +36,14 @@ train_pipeline = [
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', scale=256, backend='pillow'),
+    dict(type='Resize', scale=384, backend='pillow'),
     # dict(type='ResizeEdge', scale=292, edge='short', backend='pillow'),
     # dict(type='CenterCrop', crop_size=256),
     dict(type='PackClsInputs'),
 ]
 
 train_dataloader = dict(
-    batch_size=128,
+    batch_size=48,
     num_workers=12,
     dataset=dict(
         type=dataset_type,
