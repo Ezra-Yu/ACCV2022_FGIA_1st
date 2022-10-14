@@ -2,7 +2,7 @@
 For the competition in https://www.cvmart.net/race/10412/base
 
 
-# Prepare
+## Prepare
 
 install mmcv, mmengine, mmselfsup, mmcls
 
@@ -14,7 +14,19 @@ pip install "mmcls>=1.0.0rc1"
 pip install 'mmselfsup>=1.0.0rc1'
 ```
 
-# How to inference 
+## Get Submit Result in S2
+
+### Slurm
+
+```
+GPUS=1 GPUS_PER_NODE=1 sh ./tools/slurm_infer.sh mm_model accv_test ${CONFIG} ${CHECKPOINT} ${TEST_IMAGE_FOLDER}
+```
+
+output `pred_results.csv` and `pred_results.zip`, just submit `pred_results.zip`.
+
+
+
+## How to inference 
 
 ### Local
 
@@ -59,7 +71,7 @@ the result will be like :
  0002_e9f23d9ab4217d8322a7521712d8bef0464cc031.jpg,0002
 ```
 
-# How to train and test
+## How to train and test
 
 **Remember to change the test dataset to val**
 
