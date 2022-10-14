@@ -69,6 +69,7 @@ the result will be like :
  0002_0fcdce76ec165d97b61bb2463355f05df8287775.jpg,0002         
  0002_c282d27f595010ec1b04bd2d79d7fa280598ed74.jpg,0002       
  0002_e9f23d9ab4217d8322a7521712d8bef0464cc031.jpg,0002
+ ....
 ```
 
 ## How to train and test
