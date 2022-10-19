@@ -45,9 +45,9 @@ class LinearClsHeadLongTail(LinearClsHead):
             Defaults to ``dict(type='Normal', layer='Linear', std=0.01)``.
     """
 
-    def __init__(self, adjustions=None, *args, **kwargs):
+    def __init__(self, adjustments=None, *args, **kwargs):
         super(LinearClsHead, self).__init__(*args, **kwargs)
-        self.adjustions = adjustions
+        self.adjustments = adjustments
 
     def predict(
             self,
@@ -80,9 +80,9 @@ class LinearClsHeadLongTail(LinearClsHead):
 
         Including softmax and set ``pred_label`` of data samples.
         """
-        if self.adjustions:
-            self.adjustions.to(cls_score.device())
-            cls_score = cls_score - self.adjustions
+        if self.adjustments:
+            self.adjustments.to(cls_score.device())
+            cls_score = cls_score - self.adjustments
 
         pred_scores = F.softmax(cls_score, dim=1)
         pred_labels = pred_scores.argmax(dim=1, keepdim=True).detach()
