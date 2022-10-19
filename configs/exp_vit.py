@@ -3,6 +3,9 @@ _base_ =[
     './_base_/default_runtime.py',
     './_base_/scheduler_vit.py'
 ]
+
+custom_imports = dict(imports=['src', 'mmselfsup.engine'], allow_failed_imports=False)
+
 model = dict(
     type='ImageClassifier',
     backbone=dict(

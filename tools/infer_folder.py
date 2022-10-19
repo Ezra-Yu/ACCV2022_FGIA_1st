@@ -8,6 +8,7 @@ from mmengine.model import MMDistributedDataParallel
 from unittest.mock import patch
 from mmengine.logging import print_log
 import torch
+import src
 
 from mmcls.apis import  init_model
 from mmcls.utils import register_all_modules
