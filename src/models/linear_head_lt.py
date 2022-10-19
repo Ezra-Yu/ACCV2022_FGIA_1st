@@ -1,7 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 
 import torch
+import torch.nn as nn
+
 import torch.nn.functional as F
 import mmengine
 import numpy as np
@@ -10,7 +12,7 @@ from mmcls.registry import MODELS
 from mmcls.models.heads import LinearClsHead
 from mmcls.structures import ClsDataSample
 
-def compute_adjustment(ann_file, tro):
+def compute_adjustment(ann_file, tro=1):
     """compute the base probabilities"""
     lines = mmengine.list_from_file(ann_file)
     samples = [x.strip().rsplit(' ', 1) for x in lines]
@@ -44,10 +46,23 @@ class LinearClsHeadLongTail(LinearClsHead):
         init_cfg (dict, optional): the config to control the initialization.
             Defaults to ``dict(type='Normal', layer='Linear', std=0.01)``.
     """
+    def __init__(self,
+                num_classes: int,
+                in_channels: int,
+                adjustments = None,
+                init_cfg: Optional[dict] = dict(
+                    type='Normal', layer='Linear', std=0.01),
+                **kwargs):
+        super(LinearClsHead, self).__init__(init_cfg=init_cfg, **kwargs)
 
-    def __init__(self, adjustments=None, *args, **kwargs):
-        super(LinearClsHead, self).__init__(*args, **kwargs)
+        self.in_channels = in_channels
+        self.num_classes = num_classes
+
+        if self.num_classes <= 0:
+            raise ValueError(f'num_classes={num_classes} must be a positive integer')
+        self.fc = nn.Linear(self.in_channels, self.num_classes)
         self.adjustments = adjustments
+
 
     def predict(
             self,
@@ -80,8 +95,8 @@ class LinearClsHeadLongTail(LinearClsHead):
 
         Including softmax and set ``pred_label`` of data samples.
         """
-        if self.adjustments:
-            self.adjustments.to(cls_score.device())
+        if self.adjustments is not None:
+            self.adjustments = self.adjustments.to(cls_score.device)
             cls_score = cls_score - self.adjustments
 
         pred_scores = F.softmax(cls_score, dim=1)

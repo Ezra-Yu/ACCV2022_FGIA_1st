@@ -54,8 +54,8 @@ def parse_args():
     parser.add_argument('--local_rank', type=int, default=0)
     parser.add_argument('--tta', action='store_true', help='enable tta')
     parser.add_argument(
-        '--lt-adjustions', 
-        action='store_true', 
+        '--lt',
+        action='store_true',
         help='enable lt-adjustions')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
@@ -83,11 +83,11 @@ def main():
     if args.tta:
         cfg.model.type = "TTAImageClassifier"
         print("Using Flip TTA ......")
-    
-    if args.lt_adjustments:
+
+    if args.lt:
         adjustments = compute_adjustment("./data/ACCV_workshop/meta/all.txt")
         cfg.model.head.type = "LinearClsHeadLongTail"
-        cfg.model.head['adjustment'] = adjustments
+        cfg.model.head['adjustments'] = adjustments
         print(f"Using Long Tail Adjustments {len(adjustments)} ......")
 
     folder = Path(args.folder)

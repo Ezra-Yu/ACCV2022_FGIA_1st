@@ -3,7 +3,7 @@ import torch
 
 import mmengine
 
-def compute_adjustment(ann_file, tro):
+def compute_adjustions(ann_file, tro):
     """compute the base probabilities"""
     lines = mmengine.list_from_file(ann_file)
     samples = [x.strip().rsplit(' ', 1) for x in lines]
@@ -19,5 +19,6 @@ def compute_adjustment(ann_file, tro):
     return adjustments
 
 if __name__ == "__main__":
-    adjustments = compute_adjustment("./data/ACCV_workshop/meta/all.txt", 1)
-    print(adjustments)
+    adjustions = compute_adjustions("./data/ACCV_workshop/meta/all.txt", 1)
+    print(len(adjustions))
+    print(adjustions)

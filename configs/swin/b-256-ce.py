@@ -14,7 +14,9 @@ model = dict(
         type='SwinTransformerV2',
         arch='base',
         img_size=256,
-        drop_path_rate=0.5),
+        window_size=[16, 16, 16, 8],
+        pretrained_window_sizes=[12, 12, 12, 6],
+        drop_path_rate=0.2),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
