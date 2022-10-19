@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
+import argparse
+import os
 from pathlib import Path
 import mmengine.dist as dist
 from mmengine.device import get_device
@@ -10,14 +12,12 @@ from mmengine.logging import print_log
 import torch
 
 from mmcls.apis import  init_model
-from mmcls.utils import register_all_modules
-
-import argparse
-import os
 from mmengine.config import Config, DictAction
 from mmengine.runner import Runner
-
 from mmcls.utils import register_all_modules
+import src
+from src.models.linear_head_lt import compute_adjustment
+
 
 
 def parse_args():
@@ -51,10 +51,11 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument('--tta', action='store_true', help='enable tta')
     parser.add_argument(
-                '--tta',
-                action='store_true',
-                help='enable automatic-mixed-precision training')
+        '--lt-adjustions', 
+        action='store_true', 
+        help='enable lt-adjustions')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -81,6 +82,12 @@ def main():
     if args.tta:
         cfg.model.type = "TTAImageClassifier"
         print("Using Flip TTA ......")
+    
+    if args.lt_adjustions:
+        adjustions = compute_adjustment("./data/ACCV_workshop/meta/all.txt")
+        cfg.model.head.type = "LinearClsHeadLongTail"
+        cfg.model.head['adjustions'] = adjustions
+        print("Using Long Tail Adjustions ......")
 
     folder = Path(args.folder)
     if folder.is_file():
