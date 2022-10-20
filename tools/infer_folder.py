@@ -84,11 +84,9 @@ def main():
         cfg.model.type = "TTAImageClassifier"
         print("Using Flip TTA ......")
 
-    if args.lt:
-        adjustments = compute_adjustment("./data/ACCV_workshop/meta/all.txt")
-        cfg.model.head.type = "LinearClsHeadLongTail"
-        cfg.model.head['adjustments'] = adjustments
-        print(f"Using Long Tail Adjustments {len(adjustments)} ......")
+    if args.lt and cfg.model.head.type != "LinearClsHeadWithAdjustment":
+        cfg.model.head.type = "LinearClsHeadWithAdjustment"
+        cfg.model.head['adjustments'] = cfg.train_dataloader.dataset.ann_file
 
     folder = Path(args.folder)
     if folder.is_file():

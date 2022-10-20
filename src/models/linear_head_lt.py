@@ -29,7 +29,7 @@ def compute_adjustment(ann_file, tro=1):
 
 
 @MODELS.register_module()
-class LinearClsHeadLongTail(LinearClsHead):
+class LinearClsHeadWithAdjustment(LinearClsHead):
     """Linear classifier head.
 
     Args:
@@ -61,8 +61,40 @@ class LinearClsHeadLongTail(LinearClsHead):
         if self.num_classes <= 0:
             raise ValueError(f'num_classes={num_classes} must be a positive integer')
         self.fc = nn.Linear(self.in_channels, self.num_classes)
-        self.adjustments = adjustments
 
+        if isinstance(adjustments, str):
+            adjustments = compute_adjustment(adjustments)
+
+        if adjustments is not None:
+            self.register_buffer("adjustments", adjustments)
+            print(f"Using Long Tail Adjustments {len(self.adjustments)}.")
+        else:
+            self.adjustments = adjustments
+
+    def loss(self, feats: Tuple[torch.Tensor],
+             data_samples: List[ClsDataSample], **kwargs) -> dict:
+        """Calculate losses from the classification score.
+
+        Args:
+            feats (tuple[Tensor]): The features extracted from the backbone.
+                Multiple stage inputs are acceptable but only the last stage
+                will be used to classify. The shape of every item should be
+                ``(num_samples, num_classes)``.
+            data_samples (List[ClsDataSample]): The annotation data of
+                every samples.
+            **kwargs: Other keyword arguments to forward the loss module.
+
+        Returns:
+            dict[str, Tensor]: a dictionary of loss components
+        """
+        # The part can be traced by torch.fx
+        cls_score = self(feats)
+        if self.adjustments is not None:
+            cls_score += self.adjustments
+
+        # The part can not be traced by torch.fx
+        losses = self._get_loss(cls_score, data_samples, **kwargs)
+        return losses
 
     def predict(
             self,
@@ -96,7 +128,6 @@ class LinearClsHeadLongTail(LinearClsHead):
         Including softmax and set ``pred_label`` of data samples.
         """
         if self.adjustments is not None:
-            self.adjustments = self.adjustments.to(cls_score.device)
             cls_score = cls_score - self.adjustments
 
         pred_scores = F.softmax(cls_score, dim=1)
