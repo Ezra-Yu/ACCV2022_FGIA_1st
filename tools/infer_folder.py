@@ -17,7 +17,6 @@ from mmengine.config import Config, DictAction
 from mmengine.runner import Runner
 from mmcls.utils import register_all_modules
 import src
-from src.models.linear_head_lt import compute_adjustment
 
 
 
@@ -67,7 +66,7 @@ def main():
 
     # register all modules in mmcls into the registries
     # do not init the default scope here because it will be init in the runner
-    register_all_modules(init_default_scope=False)
+    register_all_modules()
 
     # load config
     cfg = Config.fromfile(args.config)
@@ -86,16 +85,16 @@ def main():
 
     if args.lt and cfg.model.head.type != "LinearClsHeadWithAdjustment":
         cfg.model.head.type = "LinearClsHeadWithAdjustment"
-        cfg.model.head['adjustments'] = cfg.train_dataloader.dataset.ann_file
+        cfg.model.head['adjustments'] = "./data/ACCV_workshop/meta/all.txt"
 
     folder = Path(args.folder)
     if folder.is_file():
         image_path_list = [folder]
     elif folder.is_dir():
-        image_path_list = [
-            p for p in folder.iterdir() if p.is_file()]
+        # image_path_list = [p for p in folder.iterdir() if p.is_file()]
+        image_path_list = os.listdir(folder)
     data_list = [
-        {'img_path': str(img_path), 'gt_label': int(-1)}
+        {'img_path': os.path.join(folder, img_path), 'gt_label': int(-1)}
         for img_path in image_path_list
     ]
     print(f"Total images number : {len(image_path_list)}")
@@ -108,11 +107,11 @@ def main():
             device_ids=[int(os.environ['LOCAL_RANK'])],)
 
     sim_dataloader = cfg.test_dataloader
+    print(args.folder)
     sim_dataloader.dataset=dict(
             type='CustomDataset',
             data_prefix=args.folder,
-            pipeline=cfg.test_dataloader.dataset.pipeline,
-            _scope_='mmcls')
+            pipeline=cfg.test_dataloader.dataset.pipeline)
 
     with patch.object(CustomDataset, 'load_data_list', return_value=data_list):
         sim_loader = Runner.build_dataloader(sim_dataloader)
