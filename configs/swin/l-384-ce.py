@@ -42,11 +42,7 @@ if __name__ == '__main__':
     from mmcls.models import build_classifier
     import torch
 
-    classifier = build_classifier(model)
-    x = torch.rand( (1, 3, 384, 384) )
+
+    x = torch.rand( (1, 3, 256, 256) )
     y = classifier(inputs=x)
     print(y.size())
-
-
-
-
