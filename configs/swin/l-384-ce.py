@@ -10,7 +10,7 @@ custom_imports = dict(imports=['src'], allow_failed_imports=False)
 model = dict(
     type='ImageClassifier',
     # pretrained = "https://download.openmmlab.com/mmclassification/v0/swin-v2/swinv2-large-w24_in21k-pre_3rdparty_in1k-384px_20220803-3b36c165.pth",
-    pretrained = "https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-base-w12_3rdparty_in21k-192px_20220803-f7dc9763.pth",
+    pretrained = "https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-large-w12_3rdparty_in21k-192px_20220803-d9073fee.pth",
     backbone=dict(
         type='SwinTransformerV2',
         arch='large',
