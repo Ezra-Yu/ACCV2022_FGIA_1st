@@ -1,7 +1,7 @@
 _base_ =[                                                                                                                                                                                         
-     './_base_/dataset384_b16.py',                                                                                                                                                                 
-     './_base_/default_runtime.py',                                                                                                                                                                
-     './_base_/scheduler20e.py'                                                                                                                                                                    
+     '../_base_/dataset384_b16.py',                                                                                                                                                                 
+     '../_base_/default_runtime.py',                                                                                                                                                                
+     '../_base_/scheduler20e.py'                                                                                                                                                                    
  ]                                                                                                                                                                                                 
                                                                                                                                                                                                    
 custom_imports = dict(imports=['src'], allow_failed_imports=False)                                                                                                                                

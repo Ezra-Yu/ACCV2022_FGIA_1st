@@ -1,7 +1,7 @@
 _base_ =[
-    './_base_/dataset256.py',
-    './_base_/default_runtime.py',
-    './_base_/scheduler20e.py'
+    '../_base_/dataset256.py',
+    '../_base_/default_runtime.py',
+    '../_base_/scheduler20e.py'
 ]
 
 custom_imports = dict(imports=['src'], allow_failed_imports=False)
@@ -19,9 +19,10 @@ model = dict(
         drop_path_rate=0.2),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
-        type='LinearClsHead',
+        type='LinearClsHeadWithAdjustment',
         num_classes=5000,
         in_channels=1024,
+        adjustments="./data/ACCV_workshop/meta/all.txt",
         init_cfg=None,  # suppress the default init_cfg of LinearClsHead.
         loss=dict(
             type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),

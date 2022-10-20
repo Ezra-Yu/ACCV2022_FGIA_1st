@@ -1,7 +1,7 @@
 _base_ =[
-    './_base_/dataset256_nore.py',
-    './_base_/default_runtime.py',
-    './_base_/scheduler20e.py'
+    '../_base_/dataset256.py',
+    '../_base_/default_runtime.py',
+    '../_base_/scheduler20e_arc.py'
 ]
 
 custom_imports = dict(imports=['src'], allow_failed_imports=False)
@@ -19,21 +19,13 @@ model = dict(
         drop_path_rate=0.2),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
-        type='LinearClsHead',
+        type='ArcFaceClsHead',
         num_classes=5000,
         in_channels=1024,
-        init_cfg=None,  # suppress the default init_cfg of LinearClsHead.
-        loss=dict(
-            type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
-        cal_acc=False),
-    init_cfg=[
-        dict(type='TruncNormal', layer='Linear', std=0.02, bias=0.),
-        dict(type='Constant', layer='LayerNorm', val=1., bias=0.)
-    ],
-    train_cfg=dict(augments=[
-        dict(type='Mixup', alpha=0.8, num_classes=5000),
-        dict(type='CutMix', alpha=1.0, num_classes=5000)
-    ]),
+        loss = dict(type='CrossEntropyLoss', loss_weight=1.0),
+        init_cfg=[
+            dict(type='TruncNormal', layer='Linear', std=0.02, bias=0.),
+            dict(type='Constant', layer='LayerNorm', val=1., bias=0.)],),
 )
 
 
