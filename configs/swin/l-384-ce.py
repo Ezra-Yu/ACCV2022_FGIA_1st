@@ -1,7 +1,7 @@
 _base_ =[
-    './_base_/dataset384.py',
+    './_base_/dataset384_b16.py',
     './_base_/default_runtime.py',
-    './_base_/scheduler50e.py'
+    './_base_/scheduler20e.py'
 ]
 
 custom_imports = dict(imports=['src'], allow_failed_imports=False)
@@ -9,12 +9,14 @@ custom_imports = dict(imports=['src'], allow_failed_imports=False)
 # model settings
 model = dict(
     type='ImageClassifier',
-    pretrained = "https://download.openmmlab.com/mmclassification/v0/swin-v2/swinv2-large-w24_in21k-pre_3rdparty_in1k-384px_20220803-3b36c165.pth"
-    # pretrained = "https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-base-w12_3rdparty_in21k-192px_20220803-f7dc9763.pth",
+    # pretrained = "https://download.openmmlab.com/mmclassification/v0/swin-v2/swinv2-large-w24_in21k-pre_3rdparty_in1k-384px_20220803-3b36c165.pth",
+    pretrained = "https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-base-w12_3rdparty_in21k-192px_20220803-f7dc9763.pth",
     backbone=dict(
         type='SwinTransformerV2',
         arch='large',
         img_size=384,
+        window_size=[24, 24, 24, 12],
+        pretrained_window_sizes=[12, 12, 12, 6],
         drop_path_rate=0.2),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(

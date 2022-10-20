@@ -146,13 +146,12 @@ test_dataloader = dict(
                                 type='LoadImageFromFile',
             ),
             dict(
-                                type='ResizeEdge',
-                                scale=512,
-                                edge='short',
+                                type='Resize',
+                                scale=448,
                                 backend='pillow',
                                 interpolation='bicubic'
             ),
-                        dict(type='CenterCrop', crop_size=448),
+                        # dict(type='CenterCrop', crop_size=448),
                         dict(type='PackClsInputs')
 
         ],

@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import autocast
 
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
@@ -109,34 +110,34 @@ class ArcFaceClsHead(ClsHead):
                 feats: Tuple[torch.Tensor],
                 target: Optional[torch.Tensor] = None) -> torch.Tensor:
         """The forward process."""
+        with autocast(enabled=False, device_type="cuda"):
+            pre_logits = self.pre_logits(feats)
 
-        pre_logits = self.pre_logits(feats)
+            # cos=(a*b)/(||a||*||b||)
+            cosine = self.norm_linear(pre_logits)
 
-        # cos=(a*b)/(||a||*||b||)
-        cosine = self.norm_linear(pre_logits)
+            if target is None:
+                return self.s * cosine
 
-        if target is None:
-            return self.s * cosine
+            phi = torch.cos(torch.acos(cosine) + self.m)
 
-        phi = torch.cos(torch.acos(cosine) + self.m)
+            if self.easy_margin:
+                # when cosine>0, choose phi
+                # when cosine<=0, choose cosine
+                phi = torch.where(cosine > 0, phi, cosine)
+            else:
+                # when cos>th, choose phi
+                # when cos<=th, choose cosine-mm
+                phi = torch.where(cosine > self.th, phi, cosine - self.mm)
 
-        if self.easy_margin:
-            # when cosine>0, choose phi
-            # when cosine<=0, choose cosine
-            phi = torch.where(cosine > 0, phi, cosine)
-        else:
-            # when cos>th, choose phi
-            # when cos<=th, choose cosine-mm
-            phi = torch.where(cosine > self.th, phi, cosine - self.mm)
-
-        one_hot = torch.zeros(cosine.size(), device=pre_logits.device)
-        one_hot.scatter_(1, target.view(-1, 1).long(), 1)
-        if self.ls_eps > 0:
-            one_hot = (1 -
+            one_hot = torch.zeros(cosine.size(), device=pre_logits.device)
+            one_hot.scatter_(1, target.view(-1, 1).long(), 1)
+            if self.ls_eps > 0:
+                one_hot = (1 -
                        self.ls_eps) * one_hot + self.ls_eps / self.num_classes
 
-        output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
-        return output * self.s
+            output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
+            return output * self.s
 
     def loss(self, feats: Tuple[torch.Tensor],
              data_samples: List[ClsDataSample], **kwargs) -> dict:
