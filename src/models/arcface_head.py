@@ -74,6 +74,7 @@ class SubCenterNormLinear(nn.Linear):
         super().__init__(in_features, out_features * k, bias=bias)
         self.weight_norm = weight_norm
         self.feature_norm = feature_norm
+        self.out_features = out_features
         self.k = k
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
@@ -86,7 +87,7 @@ class SubCenterNormLinear(nn.Linear):
         cosine_all = F.linear(input, weight, self.bias)
         cosine_all = cosine_all.view(-1, self.out_features, self.k)
         cosine, _ = torch.max(cosine_all, dim=2)
-        return cosine 
+        return cosine
 
 
 @MODELS.register_module()
@@ -112,7 +113,7 @@ class ArcFaceClsHead(ClsHead):
                  in_channels: int,
                  s: float = 30.0,
                  m: float = 0.50,
-                 number_sub_cenmter: int = 1,
+                 number_sub_center: int = 1,
                  easy_margin: bool = False,
                  ls_eps: float = 0.0,
                  bias: bool = False,
@@ -133,12 +134,12 @@ class ArcFaceClsHead(ClsHead):
         self.m = m
         self.ls_eps = ls_eps
 
-        assert number_sub_cenmter > 1
-        if number_sub_cenmter == 1:
+        assert number_sub_center >= 1
+        if number_sub_center == 1:
             self.norm_linear = NormLinear(in_channels, num_classes, bias=bias)
         else:
             self.norm_linear = SubCenterNormLinear(
-                    in_channels, num_classes, bias=bias, k=number_sub_cenmter)
+                    in_channels, num_classes, bias=bias, k=number_sub_center)
 
         self.easy_margin = easy_margin
         self.th = math.cos(math.pi - m)
@@ -243,7 +244,7 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
                  in_channels: int,
                  s: float = 30.0,
                  ann_file = None,
-                 number_sub_cenmter=1,
+                 number_sub_center=1,
                  ls_eps: float = 0.0,
                  bias: bool = False,
                  arcface_m_x = 0.05,
@@ -251,7 +252,7 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
                  loss: dict = dict(type='CrossEntropyLoss', loss_weight=1.0),
                  init_cfg: Optional[dict] = None):
 
-        super(ArcFaceClsHead, self).__init__(init_cfg=init_cfg)
+        super().__init__(init_cfg=init_cfg)
         self.loss_module = MODELS.build(loss)
 
         self.in_channels = in_channels
@@ -264,12 +265,12 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
         self.s = s
         self.ls_eps = ls_eps
 
-        assert number_sub_cenmter > 1
-        if number_sub_cenmter == 1:
+        assert number_sub_center >= 1
+        if number_sub_center == 1:
             self.norm_linear = NormLinear(in_channels, num_classes, bias=bias)
         else:
             self.norm_linear = SubCenterNormLinear(
-                    in_channels, num_classes, bias=bias, k=number_sub_cenmter)
+                    in_channels, num_classes, bias=bias, k=number_sub_center)
 
         # calc adaptive margin
         lines = mmengine.list_from_file(ann_file)
@@ -279,7 +280,7 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
         margins = (tmp - tmp.min()) / (tmp.max() - tmp.min()) * arcface_m_x + arcface_m_y
         margins = torch.from_numpy(margins.astype(np.float32))
         self.register_buffer('margins', margins)
-    
+
     def forward(self,
                 feats: Tuple[torch.Tensor],
                 target: Optional[torch.Tensor] = None) -> torch.Tensor:
