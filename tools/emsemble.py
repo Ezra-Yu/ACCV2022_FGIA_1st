@@ -2,6 +2,7 @@
 import pickle
 import argparse
 import csv
+import os
 
 import numpy as np
 
@@ -10,8 +11,12 @@ CLASSES = [f"{i:0>4d}" for i in range(5000)]
 def parse_args():
     parser = argparse.ArgumentParser(description='Ensemble Learning')
     parser.add_argument('--pkls', nargs='+', default=[], help='Ensemble results')
+    parser.add_argument('--pkls-dir', default=None, help='Ensemble results')
     parser.add_argument('--out', default="pred_results.csv", help='output path')
     args = parser.parse_args()
+    assert len(args.pkls) != 0 or args.pkls_dir is not None
+    if len(args.pkls) == 0 or args.pkls_dir is None:
+        raise ValueError("please set one of `--pkls` or `--pkls-dir`.")
     return args
 
 def loda_pkl(pkl_path, data_dict, num_models):
@@ -35,12 +40,17 @@ def post_process(data_dict):
 
 def main():
     args = parse_args()
-    num_models = len(args.pkls)
+    if len(args.models) > 0:
+        pkls = args.pkls
+    elif args.pkls_dir is not None:
+        pkls = [p for p in os.listdir(args.pkls_dir) if p.endswith(".pkl")]
+
+    num_models = len(pkls)  
     print(f"Number of .pkls is {num_models}....")
     assert num_models > 0
 
     data_dict = dict()
-    for pkl in args.pkls:
+    for pkl in pkls:
         loda_pkl(pkl, data_dict, num_models)
     result_list = post_process(data_dict)
     
