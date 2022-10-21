@@ -5,7 +5,10 @@ from typing import List, Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import autocast
+try:
+    from torch import autocast
+except:
+    from torch.cuda.amp import autocast
 import numpy as np
 import mmengine
 
