@@ -113,9 +113,11 @@ def main():
     if args.ttaug:
         from src.models.classifier_tta import ClassifierTTA
         from mmcls.models.classifiers import ImageClassifier
-        assert hasattr(cfg, 'tta_pipeline')
-        assert isinstance(model, ImageClassifier)
+        from mmengine.config import Config
         
+        assert isinstance(model, ImageClassifier)
+        if not hasattr(cfg, "tta_pipeline"):
+            cfg.tta_pipeline = Config.fromfile("./configs/tta.py")
         model = ClassifierTTA(model)
         sim_dataloader.dataset.pipeline = cfg.tta_pipeline
 
