@@ -1,6 +1,7 @@
 dataset_type = 'ImageNet'
 data_preprocessor = dict(
-        mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True
+    num_classes=5000,
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True
 )
 bgr_mean = [103.53, 116.28, 123.675]
 bgr_std = [57.375, 57.12, 58.395]
@@ -265,8 +266,8 @@ model = dict(
                 init_cfg=[dict(type='TruncNormal', layer='Linear', std=2e-05)]
     ),
     train_cfg=dict(augments=[
-                dict(type='Mixup', alpha=0.8, num_classes=5000),
-                dict(type='CutMix', alpha=1.0, num_classes=5000)
+                dict(type='Mixup', alpha=0.8),
+                dict(type='CutMix', alpha=1.0)
 
     ])
 )

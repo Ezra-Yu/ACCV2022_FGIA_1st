@@ -30,7 +30,7 @@ model = dict(
             type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
         init_cfg=[dict(type='TruncNormal', layer='Linear', std=2e-05)]),
     train_cfg=dict(augments=[
-        dict(type='Mixup', alpha=0.8, num_classes=5000),
-        dict(type='CutMix', alpha=1.0, num_classes=5000)
+        dict(type='Mixup', alpha=0.8),
+        dict(type='CutMix', alpha=1.0)
     ]))
 
