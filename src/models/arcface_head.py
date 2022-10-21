@@ -250,8 +250,8 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
                  number_sub_center=1,
                  ls_eps: float = 0.0,
                  bias: bool = False,
-                 arcface_m_x = 0.05,
-                 arcface_m_y = 0.45,
+                 arcface_m_x = 0.45,
+                 arcface_m_y = 0.05,
                  loss: dict = dict(type='CrossEntropyLoss', loss_weight=1.0),
                  init_cfg: Optional[dict] = None):
 
@@ -278,7 +278,6 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
         # calc adaptive margin
         lines = mmengine.list_from_file(ann_file)
         targets = np.array([int(x.strip().rsplit(' ', 1)[-1]) for x in lines])
-        # tmp = np.sqrt( 1 / np.sqrt( np.bincount(targets) ) )
         tmp = np.power(1 / np.bincount(targets), 0.25 )
         margins = (tmp - tmp.min()) / (tmp.max() - tmp.min()) * arcface_m_x + arcface_m_y
         margins = torch.from_numpy(margins.astype(np.float32))
