@@ -5,6 +5,8 @@ import os.path as osp
 from copy import deepcopy
 
 import mmengine
+from mmdet.registry import RUNNERS
+from mmengine.model.wrappers.test_time_aug import build_runner_with_tta
 from mmengine.config import Config, ConfigDict, DictAction
 from mmengine.hooks import Hook
 from mmengine.runner import Runner
@@ -17,6 +19,7 @@ def parse_args():
         description='MMCLS test (and eval) a model')
     parser.add_argument('config', help='test config file path')
     parser.add_argument('checkpoint', help='checkpoint file')
+    parser.add_argument('--tta', action='store_true')
     parser.add_argument(
         '--work-dir',
         help='the directory to save the file containing evaluation metrics')
@@ -140,7 +143,18 @@ def main():
     cfg = merge_args(cfg, args)
 
     # build the runner from config
-    runner = Runner.from_cfg(cfg)
+    if args.tta:
+        runner = build_runner_with_tta(cfg)
+        # build the runner from config
+
+    if 'runner_type' not in cfg:
+        # build the default runner
+        runner = Runner.from_cfg(cfg)
+    else:
+        # build customized runner from the registry
+        # if 'runner_type' is set in the cfg
+        runner = RUNNERS.build(cfg)
+
 
     if args.out:
 

@@ -52,6 +52,7 @@ def parse_args():
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
     parser.add_argument('--tta', action='store_true', help='enable tta')
+    parser.add_argument('--ttaug', action='store_true', help='enable tta')
     parser.add_argument(
         '--lt',
         action='store_true',
@@ -101,10 +102,6 @@ def main():
     model = init_model(cfg, args.checkpoint, device=get_device())
     CLASSES = [f"{i:0>4d}" for i in range(model.head.num_classes)]
 
-    if args.launcher != 'none' and dist.is_distributed:
-        model = MMDistributedDataParallel(
-            module=model,
-            device_ids=[int(os.environ['LOCAL_RANK'])],)
 
     sim_dataloader = cfg.test_dataloader
     print(args.folder)
@@ -112,6 +109,20 @@ def main():
             type='CustomDataset',
             data_prefix=args.folder,
             pipeline=cfg.test_dataloader.dataset.pipeline)
+    
+    if args.ttaug:
+        from src.models.classifier_tta import ClassifierTTA
+        from mmcls.models.classifiers import ImageClassifier
+        assert hasattr(cfg, 'tta_pipeline')
+        assert isinstance(model, ImageClassifier)
+        
+        model = ClassifierTTA(model)
+        sim_dataloader.dataset.pipeline = cfg.tta_pipeline
+
+    if args.launcher != 'none' and dist.is_distributed:
+        model = MMDistributedDataParallel(
+            module=model,
+            device_ids=[int(os.environ['LOCAL_RANK'])],)
 
     with patch.object(CustomDataset, 'load_data_list', return_value=data_list):
         sim_loader = Runner.build_dataloader(sim_dataloader)
