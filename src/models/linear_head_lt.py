@@ -49,6 +49,7 @@ class LinearClsHeadWithAdjustment(LinearClsHead):
     def __init__(self,
                 num_classes: int,
                 in_channels: int,
+                mod_loss = False,
                 adjustments = None,
                 init_cfg: Optional[dict] = dict(
                     type='Normal', layer='Linear', std=0.01),
@@ -70,6 +71,8 @@ class LinearClsHeadWithAdjustment(LinearClsHead):
             print(f"Using Long Tail Adjustments {len(self.adjustments)}.")
         else:
             self.adjustments = adjustments
+
+        self.mod_loss = mod_loss
 
     def loss(self, feats: Tuple[torch.Tensor],
              data_samples: List[ClsDataSample], **kwargs) -> dict:
@@ -127,7 +130,9 @@ class LinearClsHeadWithAdjustment(LinearClsHead):
 
         Including softmax and set ``pred_label`` of data samples.
         """
-        if self.adjustments is not None:
+        if self.adjustments is not None and self.mod_loss:
+            cls_score = cls_score + self.adjustments
+        elif self.adjustments is not None and self.mod_loss is False:
             cls_score = cls_score - self.adjustments
 
         pred_scores = F.softmax(cls_score, dim=1)
