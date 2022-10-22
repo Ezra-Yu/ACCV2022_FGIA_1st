@@ -76,5 +76,5 @@ val_dataloader = dict(
 
 test_dataloader = val_dataloader
 
-val_evaluator = dict(type='Accuracy', topk=(1, 5), _scope_='mmcls')
+val_evaluator = dict(type='Accuracy', topk=(1, 5), _scope_='mmcls', collect_device = 'gpu')
 test_evaluator = val_evaluator

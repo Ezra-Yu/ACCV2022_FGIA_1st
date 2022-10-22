@@ -109,17 +109,14 @@ def main():
             type='CustomDataset',
             data_prefix=args.folder,
             pipeline=cfg.test_dataloader.dataset.pipeline)
-    
+
     if args.ttaug:
         from src.models.classifier_tta import ClassifierTTA
         from mmcls.models.classifiers import ImageClassifier
-        from mmengine.config import Config
-        
+
         assert isinstance(model, ImageClassifier)
-        if not hasattr(cfg, "tta_pipeline"):
-            cfg.tta_pipeline = Config.fromfile("./configs/tta.py")
         model = ClassifierTTA(model)
-        sim_dataloader.dataset.pipeline = cfg.tta_pipeline
+        sim_dataloader.dataset['pipeline'] = cfg.tta_pipeline
 
     if args.launcher != 'none' and dist.is_distributed:
         model = MMDistributedDataParallel(
