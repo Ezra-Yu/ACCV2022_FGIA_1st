@@ -1,24 +1,20 @@
-# Copyright (c) OpenMMLab. All rights reserved.
-import math
 import argparse
 import os
+import pickle
+
+import torch
 from pathlib import Path
 import mmengine.dist as dist
 from mmengine.device import get_device
-from mmcls.datasets import CustomDataset
 from mmengine.model import MMDistributedDataParallel
 from unittest.mock import patch
-from mmengine.logging import print_log
-import torch
-import src
 
-from mmcls.apis import  init_model
-from mmcls.utils import track_on_main_process
 from mmengine.config import Config, DictAction
-from mmengine.runner import Runner
 from mmcls.utils import register_all_modules
-import src
-
+from mmcls.apis import init_model
+from mmengine.runner import Runner
+from mmcls.datasets import CustomDataset
+from mmcls.utils import track_on_main_process
 
 
 def parse_args():
@@ -29,13 +25,7 @@ def parse_args():
     parser.add_argument(
         'folder',
         help='the directory to save the file containing evaluation metrics')
-    parser.add_argument('--out', help='the file to save results.')
-    parser.add_argument('--dump', default=None, help='dump to results.')
-    parser.add_argument(
-        '--out-keys',
-        nargs='+',
-        default=['filename', 'pred_class'],
-        help='output path')
+    parser.add_argument('index', help='checkpoint file')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -52,12 +42,6 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
-    parser.add_argument('--tta', action='store_true', help='enable tta')
-    parser.add_argument('--ttaug', action='store_true', help='enable tta')
-    parser.add_argument(
-        '--lt',
-        action='store_true',
-        help='enable lt-adjustions')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -67,7 +51,6 @@ def main():
     args = parse_args()
 
     # register all modules in mmcls into the registries
-    # do not init the default scope here because it will be init in the runner
     register_all_modules()
 
     # load config
@@ -81,13 +64,8 @@ def main():
         dist_cfg: dict = cfg.env_cfg.get('dist_cfg', {})
         dist.init_dist(args.launcher, **dist_cfg)
 
-    if args.tta:
-        cfg.model.type = "TTAImageClassifier"
-        print("Using Flip TTA ......")
 
-    if args.lt and cfg.model.head.type != "LinearClsHeadWithAdjustment":
-        cfg.model.head.type = "LinearClsHeadWithAdjustment"
-        cfg.model.head['adjustments'] = "./data/ACCV_workshop/meta/all.txt"
+    index_images, index_feats, index_labels = loda_pkl(args.index)
 
     folder = Path(args.folder)
     if folder.is_file():
@@ -102,7 +80,6 @@ def main():
     print(f"Total images number : {len(image_path_list)}")
     model = init_model(cfg, args.checkpoint, device=get_device())
     CLASSES = [f"{i:0>4d}" for i in range(model.head.num_classes)]
-
 
     sim_dataloader = cfg.test_dataloader
     print(args.folder)
@@ -125,57 +102,31 @@ def main():
             device_ids=[int(os.environ['LOCAL_RANK'])],)
 
     with patch.object(CustomDataset, 'load_data_list', return_value=data_list):
-        sim_loader = Runner.build_dataloader(sim_dataloader)
+        sim_loader = Runner.build_dataloader(sim_dataloader) 
 
     result_list = []
     with torch.no_grad():
         for data_batch in track_on_main_process(sim_loader):
             batch_prediction = model.test_step(data_batch)
 
-            # forward the model
-            for cls_data_sample in batch_prediction:
-                cls_pred_label = cls_data_sample.pred_label
-                scores = cls_pred_label.score.cpu().numpy()
-                pred_score = torch.max(cls_pred_label.score).item()
-                pred_label = cls_pred_label.label.item()
-                result = dict(
-                    filename = Path(cls_data_sample.img_path).name,
-                    scores = scores,
-                    pred_score = pred_score,
-                    pred_label = pred_label,
-                    pred_class = CLASSES[pred_label])
-                result_list.append(result)
-    parts_result_list = dist.all_gather_object(result_list)
-    all_results = []
-    for part_result in parts_result_list:
-        if isinstance(part_result, list):
-            for res in part_result:
-                all_results.append(res)
-        else:
-            all_results.append(part_result)
-    output_result(args, all_results)
+    
 
 
-def output_result(args, result_list):
-    if args.out and args.out.endswith(".json"):
-        import json
-        json.dump(result_list, open(args.out, 'w'))
-    elif args.out and args.out.endswith(".csv"):
-        import csv
-        with open(args.out, "w") as csvfile:
-            writer = csv.writer(csvfile)
-            # writer.writerow(args.out_keys)
-            for result in result_list:
-                writer.writerow([result[k] for k in args.out_keys])
-    print(args.dump)
-    if args.dump:
-        assert args.dump.endswith(".pkl")
-        with open(args.dump, "wb") as dumpfile:
-            import pickle
-            pickle.dump(result_list, dumpfile)
+def get_pred(feats, index_feats):
+    similarity_fn = lambda a, b: torch.cosine_similarity(a.unsqueeze(1), b.unsqueeze(0), dim=-1)
+    sim = similarity_fn(feats, index_feats)
+    sorted_sim, indices = torch.sort(sim, descending=True, dim=-1)
+    predictions = dict(
+            score=sim, pred_label=indices, pred_score=sorted_sim)
+    return predictions
 
-    return result_list
-
+def loda_pkl(pkl_path):
+    with open(pkl_path, 'rb') as pkl_file:
+        data = pickle.load(pkl_file)
+    images = data['images']
+    feats = data['feats']
+    labels = data['labels']
+    return images, feats, labels
 
 if __name__ == '__main__':
     main()
