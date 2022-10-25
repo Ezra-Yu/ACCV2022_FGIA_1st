@@ -14,8 +14,8 @@ from mmcls.utils import register_all_modules
 from mmcls.apis import init_model
 from mmengine.runner import Runner
 from mmcls.datasets import CustomDataset
-from mmcls.utils import track_on_main_process
 
+CLASSES = [f"{i:0>4d}" for i in range(5000)]
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -106,19 +106,42 @@ def main():
 
     result_list = []
     with torch.no_grad():
-        for data_batch in track_on_main_process(sim_loader):
-            batch_prediction = model.test_step(data_batch)
+        for data_batch in sim_loader:
+            data = model.data_preprocessor(data_batch, False)
+            feats = model(**data)
+            if isinstance(feats, tuple):
+                feats = feats[-1]
 
+            batch_prediction = get_pred(feats, index_feats, topk=100)
+            for i, data_sample in enumerate(data_batch['data_samples']):
+                sample_idx = data_sample.get('sample_idx')
+                filename = Path(data_list[sample_idx]).name
+                pred = batch_prediction[i]
+
+                result_list.append(filename, pred['score'], pred['pred_label'])
+                
+    result = post_process(result_list)
+
+    assert args.out and args.out.endswith(".csv")
+    with open(args.out, "w") as csvfile:
+        writer = csv.writer(csvfile)
+        for result in result_list:
+            writer.writerow(result)
     
+def post_process(result):
+    result_list = []
+    for filename, label, scores in result:
+        pred_label = label[0][0].item()
+        pred_class = CLASSES[pred_label]
+        result_list.append( (filename, pred_class) )
+    return result_list
 
-
-def get_pred(feats, index_feats):
+def get_pred(feat, index_feats, topk=100):
     similarity_fn = lambda a, b: torch.cosine_similarity(a.unsqueeze(1), b.unsqueeze(0), dim=-1)
-    sim = similarity_fn(feats, index_feats)
+    sim = similarity_fn(feat, index_feats)
     sorted_sim, indices = torch.sort(sim, descending=True, dim=-1)
-    predictions = dict(
-            score=sim, pred_label=indices, pred_score=sorted_sim)
-    return predictions
+    prediction = dict(score=sorted_sim[:, :topk].cpu().numpy(), pred_label=indices[:, :topk].cpu().numpy())
+    return prediction
 
 def loda_pkl(pkl_path):
     with open(pkl_path, 'rb') as pkl_file:
@@ -127,6 +150,7 @@ def loda_pkl(pkl_path):
     feats = data['feats']
     labels = data['labels']
     return images, feats, labels
+
 
 if __name__ == '__main__':
     main()
