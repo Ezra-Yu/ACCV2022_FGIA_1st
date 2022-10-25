@@ -44,6 +44,7 @@ class NormLinear(nn.Linear):
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         if self.feature_norm:
+            print(input.size())
             input = F.normalize(input)
         if self.weight_norm:
             weight = F.normalize(self.weight)
