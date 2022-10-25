@@ -1,27 +1,22 @@
 import argparse
 import os
 import pickle
+import csv
 
 import torch
-from pathlib import Path
-import mmengine.dist as dist
-from mmengine.device import get_device
-from mmengine.model import MMDistributedDataParallel
-from unittest.mock import patch
-
-from mmengine.config import Config, DictAction
+from mmengine.config import  DictAction
 from mmcls.utils import register_all_modules
-from mmcls.apis import init_model
-from mmengine.runner import Runner
-from mmcls.datasets import CustomDataset
-from mmcls.utils import track_on_main_process
 
+
+CLASSES = [f"{i:0>4d}" for i in range(5000)]
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description='MMCLS test (and eval) a model')
     parser.add_argument('query', help='checkpoint file')
     parser.add_argument('index', help='checkpoint file')
+    parser.add_argument('--out', default="pred_results.csv", help='output path')
+    parser.add_argument('--batch', type=int, default=16, help='output path')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -53,22 +48,38 @@ def main():
     index_images, index_feats, index_labels = loda_pkl(args.index)
     query_feats = query_feats.to("cuda")
     index_feats = index_feats.to("cuda")
+    print(f"Query size: {query_feats.size()}; Index Size: {index_feats.size()}")
 
     result = []
-    for image, feat, label in zip(query_images, query_feats, query_labels):
+    for i, (image, feat, label) in enumerate(zip(query_images, query_feats, query_labels)):
+        feat = feat.unsqueeze(0)
         prediction = get_pred(feat, index_feats)
-        score = prediction['score'].cpu().numpy.tolist()
-        label = index_labels[prediction['label']].cpu().numpy.tolist()
+        score = prediction['score']
+        label = index_labels[prediction['pred_label']]
         result.append( (image, label, score) )
+        if i % 100 == 0:
+            print(i)
+    result_list = post_process(result)
 
-        print(result[-1])
+    assert args.out and args.out.endswith(".csv")
+    with open(args.out, "w") as csvfile:
+        writer = csv.writer(csvfile)
+        for result in result_list:
+            writer.writerow(result)
 
+def post_process(result):
+    result_list = []
+    for filename, label, scores in result:
+        pred_label = label[0].item()
+        pred_class = CLASSES[pred_label]
+        result_list.append( (filename, pred_class) )
+    return result_list
 
-def get_pred(feat, index_feats, topk=10):
+def get_pred(feat, index_feats, topk=100):
     similarity_fn = lambda a, b: torch.cosine_similarity(a.unsqueeze(1), b.unsqueeze(0), dim=-1)
     sim = similarity_fn(feat, index_feats)
     sorted_sim, indices = torch.sort(sim, descending=True, dim=-1)
-    prediction = dict(score=sorted_sim[:topk], pred_label=indices[:topk])
+    prediction = dict(score=sorted_sim[:topk].cpu().numpy(), pred_label=indices[:topk].cpu().numpy())
     return prediction
 
 def loda_pkl(pkl_path):
