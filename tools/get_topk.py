@@ -1,9 +1,12 @@
 import argparse
+import imp
 import os
 import pickle
 import csv
+from pathlib import Path
 
 import torch
+from mmengine.utils import ProgressBar
 from mmengine.config import  DictAction
 from mmcls.utils import register_all_modules
 
@@ -43,6 +46,7 @@ def main():
 
     # register all modules in mmcls into the registries
     register_all_modules()
+    
 
     query_images, query_feats, query_labels = loda_pkl(args.query)
     index_images, index_feats, index_labels = loda_pkl(args.index)
@@ -51,14 +55,15 @@ def main():
     print(f"Query size: {query_feats.size()}; Index Size: {index_feats.size()}")
 
     result = []
+    progressbar = ProgressBar(len(query_images))
     for i, (image, feat, label) in enumerate(zip(query_images, query_feats, query_labels)):
         feat = feat.unsqueeze(0)
         prediction = get_pred(feat, index_feats)
         score = prediction['score']
         label = index_labels[prediction['pred_label']]
-        result.append( (image, label, score) )
-        if i % 100 == 0:
-            print(i)
+        result.append( (Path(image), label, score) )
+        progressbar.update()
+
     result_list = post_process(result)
 
     assert args.out and args.out.endswith(".csv")
@@ -70,7 +75,7 @@ def main():
 def post_process(result):
     result_list = []
     for filename, label, scores in result:
-        pred_label = label[0].item()
+        pred_label = label[0][0].item()
         pred_class = CLASSES[pred_label]
         result_list.append( (filename, pred_class) )
     return result_list
