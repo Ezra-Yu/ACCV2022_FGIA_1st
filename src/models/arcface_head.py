@@ -157,7 +157,10 @@ class ArcFaceClsHead(ClsHead):
         """
         # The ArcFaceHead doesn't have other module, just return after
         # unpacking.
-        return feats[-1]
+        if isinstance(feats, tuple):
+            return feats[-1]
+        else:
+            return feats
 
     def forward(self,
                 feats: Tuple[torch.Tensor],
@@ -277,18 +280,20 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
                     in_channels, num_classes, bias=bias, k=number_sub_center)
 
         # calc adaptive margin
-        lines = mmengine.list_from_file(ann_file)
-        targets = np.array([int(x.strip().rsplit(' ', 1)[-1]) for x in lines])
-        tmp = np.power(1 / np.bincount(targets), 0.25 )
-        margins = (tmp - tmp.min()) / (tmp.max() - tmp.min()) * arcface_m_x + arcface_m_y
-        margins = torch.from_numpy(margins.astype(np.float32))
-        self.register_buffer('margins', margins)
+        if ann_file is not None:
+            lines = mmengine.list_from_file(ann_file)
+            targets = np.array([int(x.strip().rsplit(' ', 1)[-1]) for x in lines])
+            tmp = np.power(1 / np.bincount(targets), 0.25 )
+            margins = (tmp - tmp.min()) / (tmp.max() - tmp.min()) * arcface_m_x + arcface_m_y
+            margins = torch.from_numpy(margins.astype(np.float32))
+            self.register_buffer('margins', margins)
 
     def forward(self,
                 feats: Tuple[torch.Tensor],
                 target: Optional[torch.Tensor] = None) -> torch.Tensor:
         """The forward process."""
-        with autocast(enabled=False, device_type="cuda"):
+        with autocast(enabled=False):
+        # with autocast(enabled=False, device_type="cuda"):
             pre_logits = self.pre_logits(feats)
 
             # cos=(a*b)/(||a||*||b||)
@@ -314,6 +319,18 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
             output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
             return output * self.s
 
+    def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
+        """The process before the final classification head.
+        The input ``feats`` is a tuple of tensor, and each tensor is the
+        feature of a backbone stage. In ``ArcFaceHead``, we just obtain the
+        feature of the last stage.
+        """
+        # The ArcFaceHead doesn't have other module, just return after
+        # unpacking.
+        if isinstance(feats, tuple):
+            return feats[-1]
+        else:
+            return feats
 
     def loss(self, feats: Tuple[torch.Tensor],
              data_samples: List[ClsDataSample], **kwargs) -> dict:

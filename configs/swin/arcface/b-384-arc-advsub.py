@@ -29,3 +29,13 @@ model = dict(
             dict(type='TruncNormal', layer='Linear', std=0.02, bias=0.),
             dict(type='Constant', layer='LayerNorm', val=1., bias=0.)],),
 )
+
+
+if __name__ == "__main__":
+    from mmcls.models import build_classifier
+    import torch
+    x = torch.rand( (1, 2, 384, 384) )
+
+    cla = build_classifier(model)
+    y = cla(x)
+    print(y.size())
