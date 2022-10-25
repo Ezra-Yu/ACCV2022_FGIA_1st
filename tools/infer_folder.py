@@ -3,6 +3,8 @@ import math
 import argparse
 import os
 from pathlib import Path
+from rich.progress import Progress
+from mmengine.utils import ProgressBar
 import mmengine.dist as dist
 from mmengine.device import get_device
 from mmcls.datasets import CustomDataset
@@ -13,12 +15,12 @@ import torch
 import src
 
 from mmcls.apis import  init_model
-from mmcls.utils import track_on_main_process
 from mmengine.config import Config, DictAction
 from mmengine.runner import Runner
 from mmcls.utils import register_all_modules
 import src
 
+import mmengine.dist as dist
 
 
 def parse_args():
@@ -128,8 +130,12 @@ def main():
         sim_loader = Runner.build_dataloader(sim_dataloader)
 
     result_list = []
+    if dist.is_main_process():
+        print(f"{len(sim_loader)} {sim_loader.batch_size}")
+        progressbar = ProgressBar(len(sim_loader) * sim_loader.batch_size)
+
     with torch.no_grad():
-        for data_batch in track_on_main_process(sim_loader):
+        for data_batch in sim_loader:
             batch_prediction = model.test_step(data_batch)
 
             # forward the model
@@ -145,6 +151,10 @@ def main():
                     pred_label = pred_label,
                     pred_class = CLASSES[pred_label])
                 result_list.append(result)
+
+            if dist.is_main_process():
+                progressbar.update(sim_loader.batch_size)
+
     parts_result_list = dist.all_gather_object(result_list)
     all_results = []
     for part_result in parts_result_list:

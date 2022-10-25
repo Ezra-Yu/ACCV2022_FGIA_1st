@@ -13,6 +13,7 @@ def parse_args():
     parser.add_argument('--pkls', nargs='+', default=[], help='Ensemble results')
     parser.add_argument('--pkls-dir', default=None, help='Ensemble results')
     parser.add_argument('--out', default="pred_results.csv", help='output path')
+    parser.add_argument('--dump', default=None, help='dump to results.')
     args = parser.parse_args()
     assert len(args.pkls) != 0 or args.pkls_dir is not None
     return args
@@ -54,6 +55,13 @@ def main():
     data_dict = dict()
     for pkl in pkls:
         loda_pkl(pkl, data_dict, num_models)
+
+    if args.dump:
+        assert args.dump.endswith(".pkl")
+        with open(args.dump, "wb") as dumpfile:
+            import pickle
+            pickle.dump(data_dict, dumpfile)
+
     result_list = post_process(data_dict)
 
     assert args.out and args.out.endswith(".csv")
