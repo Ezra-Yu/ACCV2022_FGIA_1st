@@ -23,8 +23,8 @@ model = dict(
             type='LinearReduction',
             in_channels=1024,
             out_channels=512,
-            act_cfg=dict(type='ReLU'),
-            norm_cfg=dict(type='BN1d'))
+            act_cfg=None,
+            norm_cfg=None)
         ],
     head=dict(
         type='ArcFaceClsHeadAdaptiveMargin',
@@ -37,3 +37,18 @@ model = dict(
             dict(type='TruncNormal', layer='Linear', std=0.02, bias=0.),
             dict(type='Constant', layer='LayerNorm', val=1., bias=0.)],),
 )
+
+
+if __name__ == "__main__":
+    from mmcls.models import build_classifier
+    from mmcls.utils import register_all_modules
+    import src
+
+    register_all_modules()
+    import torch
+    x = torch.rand( (1, 3, 384, 384) )
+
+    model['head']['ann_file'] = None
+    cla = build_classifier(model)
+    y = cla(x)
+    print(y.size())
