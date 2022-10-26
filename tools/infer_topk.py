@@ -1,6 +1,7 @@
 import argparse
 import os
 import pickle
+import csv
 
 import torch
 from pathlib import Path
@@ -64,7 +65,6 @@ def main():
         dist_cfg: dict = cfg.env_cfg.get('dist_cfg', {})
         dist.init_dist(args.launcher, **dist_cfg)
 
-
     index_images, index_feats, index_labels = loda_pkl(args.index)
 
     folder = Path(args.folder)
@@ -79,7 +79,6 @@ def main():
     ]
     print(f"Total images number : {len(image_path_list)}")
     model = init_model(cfg, args.checkpoint, device=get_device())
-    CLASSES = [f"{i:0>4d}" for i in range(model.head.num_classes)]
 
     sim_dataloader = cfg.test_dataloader
     print(args.folder)
@@ -108,17 +107,18 @@ def main():
     with torch.no_grad():
         for data_batch in sim_loader:
             data = model.data_preprocessor(data_batch, False)
-            feats = model(**data)
+            feats = model.extract_feat(data["inputs"])
+            data_samples = model.head.predict(feats, data['data_samples'])
             if isinstance(feats, tuple):
                 feats = feats[-1]
 
-            batch_prediction = get_pred(feats, index_feats, topk=100)
-            for i, data_sample in enumerate(data_batch['data_samples']):
+            batch_sim_prediction = get_pred(feats, index_feats, topk=5)
+            for data_sample, sim_pred in zip(data_samples, batch_sim_prediction):
                 sample_idx = data_sample.get('sample_idx')
                 filename = Path(data_list[sample_idx]).name
-                pred = batch_prediction[i]
-
-                result_list.append(filename, pred['score'], pred['pred_label'])
+                score_pred = data_sample.score
+                label, s = get_single_res(score_pred, sim_pred, topk=5)
+                result_list.append(filename, s, label)
                 
     result = post_process(result_list)
 
@@ -127,7 +127,21 @@ def main():
         writer = csv.writer(csvfile)
         for result in result_list:
             writer.writerow(result)
+
+def get_single_res(score_pred, sim_pred, topk):
+    pred = torch.zeros( (5000) )
+    pred_labels = sim_pred['pred_label']
+    scores = sim_pred['score']
+    for i in range(topk):
+        pli = pred_labels[i]
+        score = scores[i]
+        pred[pli] += score ** 8 * score_pred ** 12
+
+    p_label = torch.argmax(pred).item()
+    s = pred[p_label].item()
     
+    return p_label, s
+
 def post_process(result):
     result_list = []
     for filename, label, scores in result:
