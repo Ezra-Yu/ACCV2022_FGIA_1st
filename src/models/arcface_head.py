@@ -291,8 +291,8 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
                 feats: Tuple[torch.Tensor],
                 target: Optional[torch.Tensor] = None) -> torch.Tensor:
         """The forward process."""
-        with autocast(enabled=False):
-        # with autocast(enabled=False, device_type="cuda"):
+        # with autocast(enabled=False):
+        with autocast(enabled=False, device_type="cuda"):
             pre_logits = self.pre_logits(feats).float()
 
             # cos=(a*b)/(||a||*||b||)
