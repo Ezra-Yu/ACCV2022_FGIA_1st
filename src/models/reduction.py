@@ -58,4 +58,4 @@ class LinearReduction(BaseModule):
                             f' but get {type(inputs)}')
 
         out = self.reduction(inputs)
-        return self.act(self.norm(out))
+        return (self.act(self.norm(out)), )

@@ -74,7 +74,7 @@ def main():
 
     # load config
     cfg = Config.fromfile(args.config)
-    cfg.env_cfg.dist_cfg = dict(backend='gloo')
+    # cfg.env_cfg.dist_cfg = dict(backend='gloo')
     cfg.launcher = args.launcher
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)

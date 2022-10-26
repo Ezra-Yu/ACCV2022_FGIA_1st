@@ -44,7 +44,6 @@ class NormLinear(nn.Linear):
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         if self.feature_norm:
-            print(input.size())
             input = F.normalize(input)
         if self.weight_norm:
             weight = F.normalize(self.weight)
@@ -167,7 +166,7 @@ class ArcFaceClsHead(ClsHead):
                 target: Optional[torch.Tensor] = None) -> torch.Tensor:
         """The forward process."""
         with autocast(enabled=False, device_type="cuda"):
-            pre_logits = self.pre_logits(feats)
+            pre_logits = self.pre_logits(feats).float()
 
             # cos=(a*b)/(||a||*||b||)
             cosine = self.norm_linear(pre_logits)
@@ -193,7 +192,7 @@ class ArcFaceClsHead(ClsHead):
                        self.ls_eps) * one_hot + self.ls_eps / self.num_classes
 
             output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
-            return output * self.s
+        return output * self.s
 
     def loss(self, feats: Tuple[torch.Tensor],
              data_samples: List[ClsDataSample], **kwargs) -> dict:
@@ -292,9 +291,9 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
                 feats: Tuple[torch.Tensor],
                 target: Optional[torch.Tensor] = None) -> torch.Tensor:
         """The forward process."""
-        with autocast(enabled=False):
-        # with autocast(enabled=False, device_type="cuda"):
-            pre_logits = self.pre_logits(feats)
+        # with autocast(enabled=False):
+        with autocast(enabled=False, device_type="cuda"):
+            pre_logits = self.pre_logits(feats).float()
 
             # cos=(a*b)/(||a||*||b||)
             cosine = self.norm_linear(pre_logits)
@@ -317,7 +316,8 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
                        self.ls_eps) * one_hot + self.ls_eps / self.num_classes
 
             output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
-            return output * self.s
+
+        return output * self.s
 
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head.
@@ -327,10 +327,7 @@ class ArcFaceClsHeadAdaptiveMargin(ClsHead):
         """
         # The ArcFaceHead doesn't have other module, just return after
         # unpacking.
-        if isinstance(feats, tuple):
-            return feats[-1]
-        else:
-            return feats
+        return feats[-1]
 
     def loss(self, feats: Tuple[torch.Tensor],
              data_samples: List[ClsDataSample], **kwargs) -> dict:

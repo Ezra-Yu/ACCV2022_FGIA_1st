@@ -12,6 +12,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Ensemble Learning')
     parser.add_argument('--pkls', nargs='+', default=[], help='Ensemble results')
     parser.add_argument('--pkls-dir', default=None, help='Ensemble results')
+    parser.add_argument('--nopkls', nargs='+', default=[], help='Ensemble results')
     parser.add_argument('--out', default="pred_results.csv", help='output path')
     parser.add_argument('--dump', default=None, help='dump to results.')
     args = parser.parse_args()
@@ -47,6 +48,10 @@ def main():
             os.path.join(args.pkls_dir, p) for p in os.listdir(args.pkls_dir)
             if p.endswith(".pkl")
         ]
+
+    if len(args.nopkls) > 0:
+        for nopkl in args.nopkls:
+            pkls.remove(nopkl)
 
     num_models = len(pkls)
     print(f"Number of .pkls is {num_models}....")
