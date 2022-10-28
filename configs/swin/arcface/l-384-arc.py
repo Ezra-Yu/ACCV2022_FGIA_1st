@@ -4,6 +4,8 @@ _base_ =[
     '../_base_/scheduler20e_arc.py'
 ]
 
+# _base_.train_dataloader.dataset.ann_file = "meta/train.txt"
+
 custom_imports = dict(imports=['src'], allow_failed_imports=False)
 
 # model settings

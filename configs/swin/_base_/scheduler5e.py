@@ -18,7 +18,7 @@ optim_wrapper = dict(
 
 # learning policy
 param_scheduler = [
-    dict(type='CosineAnnealingLR', eta_min=1e-3, by_epoch=True, begin=0, convert_to_iter_based=True)
+    dict(type='CosineAnnealingLR', T_max=5, eta_min=1e-3, by_epoch=True, begin=0, end=5,convert_to_iter_based=True)
 ]
 
 # train, val, test setting

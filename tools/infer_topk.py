@@ -4,6 +4,7 @@ import pickle
 import csv
 
 import torch
+from mmengine.utils import ProgressBar
 from pathlib import Path
 import mmengine.dist as dist
 from mmengine.device import get_device
@@ -27,6 +28,7 @@ def parse_args():
         'folder',
         help='the directory to save the file containing evaluation metrics')
     parser.add_argument('index', help='checkpoint file')
+    parser.add_argument('--out', default="pred_results.csv", help='the file to save results.')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -66,6 +68,7 @@ def main():
         dist.init_dist(args.launcher, **dist_cfg)
 
     index_images, index_feats, index_labels = loda_pkl(args.index)
+    index_feats = index_feats.cuda()
 
     folder = Path(args.folder)
     if folder.is_file():
@@ -86,59 +89,64 @@ def main():
             type='CustomDataset',
             data_prefix=args.folder,
             pipeline=cfg.test_dataloader.dataset.pipeline)
-    sim_dataloader.batch_size = 1
+    sim_dataloader.batch_size = 16
 
     if args.launcher != 'none' and dist.is_distributed:
         model = MMDistributedDataParallel(
             module=model,
             device_ids=[int(os.environ['LOCAL_RANK'])],)
-
+    model = model.module
     with patch.object(CustomDataset, 'load_data_list', return_value=data_list):
-        sim_loader = Runner.build_dataloader(sim_dataloader) 
+        sim_loader = Runner.build_dataloader(sim_dataloader)
 
     result_list = []
+    if dist.is_main_process():
+        progressbar = ProgressBar(len(sim_loader) * sim_loader.batch_size)
+
+    topk = 10
     with torch.no_grad():
         for data_batch in sim_loader:
+
             data = model.data_preprocessor(data_batch, False)
             feats = model.extract_feat(data["inputs"])
             data_samples = model.head.predict(feats, data['data_samples'])
             if isinstance(feats, tuple):
                 feats = feats[-1]
 
-            batch_sim_prediction = get_pred(feats, index_feats, topk=5)
-            for data_sample, sim_pred in zip(data_samples, batch_sim_prediction):
+            batch_sim_prediction = get_pred(feats, index_feats, topk)
+            for data_sample, sim_pred_label, sim_pred_score  in zip(data_samples, batch_sim_prediction['pred_label'], batch_sim_prediction['score']):
                 sample_idx = data_sample.get('sample_idx')
-                filename = Path(data_list[sample_idx]).name
-                score_pred = data_sample.score
-                label, s = get_single_res(score_pred, sim_pred, topk=5)
-                result_list.append(filename, s, label)
-                
+                filename = Path(image_path_list[sample_idx]).name
+                score_pred = data_sample.pred_label.score
+                label, s = get_single_res(score_pred, sim_pred_label, sim_pred_score ,index_labels, topk)
+                result_list.append( (filename, label, s) )
+
+            if dist.is_main_process():
+                progressbar.update(sim_loader.batch_size)
     result = post_process(result_list)
 
     assert args.out and args.out.endswith(".csv")
     with open(args.out, "w") as csvfile:
         writer = csv.writer(csvfile)
-        for result in result_list:
-            writer.writerow(result)
+        for r in result:
+            writer.writerow(r)
 
-def get_single_res(score_pred, sim_pred, topk):
+def get_single_res(score_pred, pred_labels, scores, index_labels, topk=5):
     pred = torch.zeros( (5000) )
-    pred_labels = sim_pred['pred_label']
-    scores = sim_pred['score']
     for i in range(topk):
-        pli = pred_labels[i]
+        pli = index_labels[pred_labels[i]]
         score = scores[i]
-        pred[pli] += score ** 8 * score_pred ** 12
+        pred[pli] += float(score) ** 1 *  float(score_pred[pli]) ** 3
 
     p_label = torch.argmax(pred).item()
     s = pred[p_label].item()
-    
+
     return p_label, s
 
 def post_process(result):
     result_list = []
     for filename, label, scores in result:
-        pred_label = label[0][0].item()
+        pred_label = label
         pred_class = CLASSES[pred_label]
         result_list.append( (filename, pred_class) )
     return result_list
