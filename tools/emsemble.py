@@ -43,15 +43,15 @@ def main():
     pkls = []
     if len(args.pkls) > 0:
         pkls += args.pkls
-    elif args.pkls_dir is not None:
+    if args.pkls_dir is not None:
         pkls += [
             os.path.join(args.pkls_dir, p) for p in os.listdir(args.pkls_dir)
             if p.endswith(".pkl")
         ]
-
     if len(args.nopkls) > 0:
         for nopkl in args.nopkls:
-            pkls.remove(nopkl)
+            if nopkl.endswith(".pkl"):
+                pkls.remove(nopkl)
 
     num_models = len(pkls)
     print(f"Number of .pkls is {num_models}....")

@@ -1,7 +1,7 @@
 _base_ =[
-    '../_base_/dataset256.py',
-    '../_base_/default_runtime.py',
-    '../_base_/scheduler20e_arc.py'
+    './_base_/dataset256.py',
+    './_base_/default_runtime.py',
+    './_base_/scheduler20e_arc.py'
 ]
 
 custom_imports = dict(imports=['src'], allow_failed_imports=False)
@@ -20,7 +20,7 @@ model = dict(
         num_classes=5000,
         in_channels=768,
         number_sub_center=3,
-        # ann_file="./data/ACCV_workshop/meta/all.txt",
+        ann_file="./data/ACCV_workshop/meta/all.txt",
         loss = dict(type='CrossEntropyLoss', loss_weight=1.0),
         init_cfg=[
             dict(type='TruncNormal', layer='Linear', std=0.02, bias=0.),
