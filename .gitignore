@@ -8,6 +8,7 @@
 *.pkl
 breakfile.log
 /tmp
+/demo
 
 /__pycache__
 *.pyc

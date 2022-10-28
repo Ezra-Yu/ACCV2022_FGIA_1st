@@ -86,14 +86,7 @@ def main():
             type='CustomDataset',
             data_prefix=args.folder,
             pipeline=cfg.test_dataloader.dataset.pipeline)
-
-    if args.ttaug:
-        from src.models.classifier_tta import ClassifierTTA
-        from mmcls.models.classifiers import ImageClassifier
-
-        assert isinstance(model, ImageClassifier)
-        model = ClassifierTTA(model)
-        sim_dataloader.dataset['pipeline'] = cfg.tta_pipeline
+    sim_dataloader.batch_size = 1
 
     if args.launcher != 'none' and dist.is_distributed:
         model = MMDistributedDataParallel(

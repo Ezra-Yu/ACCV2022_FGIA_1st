@@ -35,7 +35,7 @@ def post_process(data_dict):
     for filename, scores in data_dict.items():
         pred_label = np.argmax(scores)
         pred_class = CLASSES[pred_label]
-        result_list.append( (filename, pred_class) )
+        result_list.append( (filename, pred_class, scores.numpy()) )
     return result_list
 
 def main():
@@ -61,19 +61,19 @@ def main():
     for pkl in pkls:
         loda_pkl(pkl, data_dict, num_models)
 
+    result_list = post_process(data_dict)
+
     if args.dump:
         assert args.dump.endswith(".pkl")
         with open(args.dump, "wb") as dumpfile:
             import pickle
-            pickle.dump(data_dict, dumpfile)
-
-    result_list = post_process(data_dict)
+            pickle.dump(result_list, dumpfile)
 
     assert args.out and args.out.endswith(".csv")
     with open(args.out, "w") as csvfile:
         writer = csv.writer(csvfile)
         for result in result_list:
-            writer.writerow(result)
+            writer.writerow(result[:2])
 
 if __name__ == '__main__':
     main()

@@ -23,7 +23,7 @@ model = dict(
         num_classes=5000,
         in_channels=1024,
         number_sub_center=3,
-        ann_file="./data/ACCV_workshop/meta/all.txt",
+        # ann_file="./data/ACCV_workshop/meta/all.txt",
         loss = dict(type='CrossEntropyLoss', loss_weight=1.0),
         init_cfg=[
             dict(type='TruncNormal', layer='Linear', std=0.02, bias=0.),
