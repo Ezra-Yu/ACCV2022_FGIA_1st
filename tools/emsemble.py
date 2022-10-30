@@ -35,7 +35,7 @@ def post_process(data_dict):
     for filename, scores in data_dict.items():
         pred_label = np.argmax(scores)
         pred_class = CLASSES[pred_label]
-        result_list.append( (filename, pred_class, scores.numpy()) )
+        result_list.append( (filename, pred_class, scores ) )
     return result_list
 
 def main():

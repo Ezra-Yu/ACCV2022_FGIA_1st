@@ -62,7 +62,7 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root='data/ACCV_workshop',
-        ann_file='meta/all.txt',
+        ann_file='meta/val.txt',
         data_prefix='train',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
