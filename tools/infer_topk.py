@@ -30,6 +30,7 @@ def parse_args():
         help='the directory to save the file containing evaluation metrics')
     parser.add_argument('index', help='checkpoint file')
     parser.add_argument('--out', default="pred_results.csv", help='the file to save results.')
+    parser.add_argument('--n', default=None, type=int, help='the file to save results.')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -90,10 +91,11 @@ def main():
         dist.init_dist(args.launcher, **dist_cfg)
 
     index_images, index_feats, index_labels = loda_pkl(args.index)
-    select_index = get_select_index_list(index_labels)
-    print(f"You have select {len(select_index)} samplers....")
-    index_feats = index_feats[select_index]
-    index_labels = index_labels[select_index]
+    if args.n:
+        select_index = get_select_index_list(index_labels)
+        print(f"You have select {len(select_index)} samplers....")
+        index_feats = index_feats[select_index]
+        index_labels = index_labels[select_index]
     index_feats = index_feats.cuda()
 
     folder = Path(args.folder)
