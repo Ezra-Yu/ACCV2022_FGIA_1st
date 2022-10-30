@@ -2,6 +2,7 @@ import argparse
 import os
 import pickle
 import csv
+import random
 
 import torch
 from mmengine.utils import ProgressBar
@@ -50,6 +51,27 @@ def parse_args():
         os.environ['LOCAL_RANK'] = str(args.local_rank)
     return args
 
+def get_select_index_list(index_labels, n=10):
+    labels_dict = {c:0 for  c in CLASSES}
+    labels2index_dict = {c:[] for  c in CLASSES}
+    for i, label in enumerate(index_labels):
+        labels_dict[label] += 1
+        labels2index_dict[label].append(i)
+    
+    sel_index = []
+    for  c in CLASSES:
+        p_indexs = labels2index_dict[c]
+        if len(p_indexs) > n:
+            random.sample(p_indexs, n)
+        elif len(p_indexs) == n:
+            sel_index += p_indexs
+        elif len(p_indexs) < n:
+            while len(p_indexs) < n:
+                p_indexs += p_indexs
+            random.sample(p_indexs, n)
+    
+    return sel_index
+
 def main():
     args = parse_args()
 
@@ -68,6 +90,10 @@ def main():
         dist.init_dist(args.launcher, **dist_cfg)
 
     index_images, index_feats, index_labels = loda_pkl(args.index)
+    select_index = get_select_index_list(index_labels)
+    print(f"You have select {len(select_index)} samplers....")
+    index_feats = index_feats[select_index]
+    index_labels = index_labels[select_index]
     index_feats = index_feats.cuda()
 
     folder = Path(args.folder)
