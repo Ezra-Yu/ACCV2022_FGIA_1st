@@ -31,12 +31,13 @@ def plot_scores(scores):
     med = np.median(scores)
     scores_ = np.sort(scores)
     assert scores is not scores_
+    plt.ylim((0, 1))
     plt.plot(range(len(scores_)), scores_)
     plt.hlines(med, 0, len(scores_), colors="red")
     plt.text(0, med, f'median : {med}')
     plt.savefig("scores.jpg")
     plt.show()
-    
+
 def generate_pseudo_label(data, scores, thr):
     pseudo_list = []
     for (filename, classname, _), pred_score in zip(data, scores):
@@ -53,11 +54,11 @@ def main():
     data_dict = defaultdict(list)
     for i, (filename, classname, score) in enumerate( data ):
         data_dict[classname].append(i)
-    
+
     max_counts = 0
     for classname in CLASSES:
         max_counts = max(max_counts, len(data_dict[classname]))
-    
+
     counts = list(range(max_counts + 1))
     count_dict = defaultdict(int)
     for i in counts:

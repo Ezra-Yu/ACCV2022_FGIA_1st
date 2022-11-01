@@ -15,19 +15,21 @@ def parse_args():
     parser.add_argument('--nopkls', nargs='+', default=[], help='Ensemble results')
     parser.add_argument('--out', default="pred_results.csv", help='output path')
     parser.add_argument('--dump', default=None, help='dump to results.')
+    parser.add_argument('--factor', default=1.0, type=float, help='The factor to scale acc')
+    parser.add_argument('--scale', action='store_true')
     args = parser.parse_args()
     assert len(args.pkls) != 0 or args.pkls_dir is not None
     return args
 
-def loda_pkl(pkl_path, data_dict, num_models):
+def loda_pkl(pkl_path, data_dict, num_models, acc=1.0):
     print(f"Process {pkl_path}.......")
     with open(pkl_path, 'rb') as pkl_file:
         data = pickle.load(pkl_file)
     for item in data:
         if item['filename'] in data_dict:
-            data_dict[item['filename']] += item['scores'] / num_models
+            data_dict[item['filename']] += item['scores'] / num_models * acc
         else:
-            data_dict[item['filename']] = item['scores'] / num_models
+            data_dict[item['filename']] = item['scores'] / num_models * acc
     return data
 
 def post_process(data_dict):
@@ -58,8 +60,15 @@ def main():
     assert num_models > 0
 
     data_dict = dict()
-    for pkl in pkls:
-        loda_pkl(pkl, data_dict, num_models)
+    accs = [float(pkl.split('.')[0].split('-')[-1]) for pkl in pkls]
+    if args.scale:
+        min_adjust_accs = [pow(acc / min(accs), args.factor) for acc in accs]
+    else:
+        min_adjust_accs = [1 for _ in accs]
+
+    print(f"Adjusted factor is: {min_adjust_accs}")
+    for pkl, acc in zip(pkls, min_adjust_accs):
+        loda_pkl(pkl, data_dict, num_models, acc)
 
     result_list = post_process(data_dict)
 

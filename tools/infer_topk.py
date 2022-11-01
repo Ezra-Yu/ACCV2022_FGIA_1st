@@ -53,24 +53,26 @@ def parse_args():
     return args
 
 def get_select_index_list(index_labels, n=10):
-    labels_dict = {c:0 for  c in CLASSES}
+    labels_dict = {c:0 for c in CLASSES}
     labels2index_dict = {c:[] for  c in CLASSES}
+    assert len(labels_dict) == len(labels2index_dict) == 5000
     for i, label in enumerate(index_labels):
+        label = f"{label:0>4d}"
         labels_dict[label] += 1
         labels2index_dict[label].append(i)
-    
+
     sel_index = []
     for  c in CLASSES:
         p_indexs = labels2index_dict[c]
         if len(p_indexs) > n:
-            random.sample(p_indexs, n)
+            sel_index += random.sample(p_indexs, n)
         elif len(p_indexs) == n:
             sel_index += p_indexs
         elif len(p_indexs) < n:
             while len(p_indexs) < n:
                 p_indexs += p_indexs
-            random.sample(p_indexs, n)
-    
+            sel_index += random.sample(p_indexs, n)
+
     return sel_index
 
 def main():
@@ -164,7 +166,7 @@ def get_single_res(score_pred, pred_labels, scores, index_labels, topk=5):
     for i in range(topk):
         pli = index_labels[pred_labels[i]]
         score = scores[i]
-        pred[pli] += float(score) ** 1 *  float(score_pred[pli]) ** 3
+        pred[pli] += float(score) # ** 1 *  float(score_pred[pli]) ** 3
 
     p_label = torch.argmax(pred).item()
     s = pred[p_label].item()
