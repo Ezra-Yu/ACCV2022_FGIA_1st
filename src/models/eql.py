@@ -6,7 +6,7 @@ from mmcls.registry import MODELS
 from mmengine.dist import all_reduce as allreduce
 
 
-@MODELS.register()
+@MODELS.register_module()
 class SoftmaxEQLLoss(_Loss):
     def __init__(self, num_classes, indicator='pos', loss_weight=1.0, tau=1.0, eps=1e-4):
         super(SoftmaxEQLLoss, self).__init__()
@@ -23,7 +23,7 @@ class SoftmaxEQLLoss(_Loss):
         self.register_buffer('neg_grad', torch.zeros(num_classes))
         self.register_buffer('pos_neg', torch.ones(num_classes))
 
-    def forward(self, input, label):
+    def forward(self, input, label, weight=None, avg_factor=None, reduction_override=None, **kwargs):
         if self.indicator == 'pos':
             indicator = self.pos_grad.detach()
         elif self.indicator == 'neg':

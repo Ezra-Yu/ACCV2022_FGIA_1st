@@ -26,7 +26,7 @@ model = dict(
         num_classes=5000,
         in_channels=1536,
         number_sub_center=3,
-        ann_file="./data/ACCV_workshop/meta/all.txt",
+        ann_file="./data/ACCV_workshop/meta/round3/train.txt",
         loss = dict(type='SoftmaxEQLLoss', num_classes=5000),
         init_cfg=[
             dict(type='TruncNormal', layer='Linear', std=0.02, bias=0.),
