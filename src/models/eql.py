@@ -1,7 +1,6 @@
 import torch
 from torch.nn.modules.loss import _Loss
 import torch.nn.functional as F
-import math
 from mmcls.registry import MODELS
 from mmengine.dist import all_reduce as allreduce
 
