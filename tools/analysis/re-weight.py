@@ -8,7 +8,7 @@ from collections import defaultdict
 import torch
 import math
 
-K = 10
+K = 20
 
 CLASSES = [f"{i:0>4d}" for i in range(5000)]
 
