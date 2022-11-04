@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument('--nopkls', nargs='+', default=[], help='Ensemble results')
     parser.add_argument('--out', default="pred_results.csv", help='output path')
     parser.add_argument('--dump', default=None, help='dump to results.')
+    parser.add_argument('--dump-all', default=None, help='dump to all results.')
     parser.add_argument('--factor', default=1.0, type=float, help='The factor to scale acc')
     parser.add_argument('--scale', action='store_true')
     args = parser.parse_args()
@@ -77,6 +78,12 @@ def main():
         with open(args.dump, "wb") as dumpfile:
             import pickle
             pickle.dump(result_list, dumpfile)
+
+    if args.dump_all:
+        assert args.dump_all.endswith(".pkl")
+        with open(args.dump_all, "wb") as dumpfile:
+            import pickle
+            pickle.dump(data_dict, dumpfile)
 
     assert args.out and args.out.endswith(".csv")
     with open(args.out, "w") as csvfile:
