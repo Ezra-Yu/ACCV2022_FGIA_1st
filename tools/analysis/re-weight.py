@@ -50,6 +50,33 @@ def post_process(data_dict):
     return result_list
 
 
+def plot_labels2(data_list):
+    data_dict = defaultdict(list)
+    for i, (filename, classname, score) in enumerate( data_list ):
+        data_dict[classname].append(i)
+
+    max_counts = 0
+    for classname in CLASSES:
+        max_counts = max(max_counts, len(data_dict[classname]))
+
+    counts = list(range(max_counts + 1))
+    less_count_classes = defaultdict(list)
+    count_dict = defaultdict(int)
+    for i in counts:
+        count_dict[i] = 0
+    for classname in CLASSES:
+        count_dict[len(data_dict[classname])] += 1
+        if len(data_dict[classname]) < K:
+            less_count_classes[len(data_dict[classname])].append(classname)
+
+    numbers = list(count_dict.values())
+    import matplotlib.pyplot as plt
+
+    plt.bar(counts, numbers)
+    plt.savefig("target_label_after.jpg")
+    plt.show()
+
+
 def plot_labels(data):
     data_list = post_process(data)
 
@@ -105,6 +132,8 @@ def main():
 
     assert args.out and args.out.endswith(".csv")
     
+    plot_labels2(result_list)
+
     with open(args.out, "w") as csvfile:
         writer = csv.writer(csvfile)
         for result in result_list:
