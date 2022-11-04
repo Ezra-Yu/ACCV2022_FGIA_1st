@@ -8,7 +8,24 @@ from collections import defaultdict
 import torch
 import math
 
-K = 20
+K = 13
+
+
+"""
+8: 7700
+9: 7718
+10: 7729
+11: 7732
+12: 7700  
+13: 7599
+
+
+经验： 比 total / num_classes 小一点点 
+    
+    eg. 60000 / 5000 = 12  取 10-11
+        90000 / 1500 = 16  取 14-15
+
+"""
 
 CLASSES = [f"{i:0>4d}" for i in range(5000)]
 
@@ -70,6 +87,8 @@ def main():
     
     data_dict = load_pkl(args.pkl)
     result_list, less_count_classes  = plot_labels(data_dict)
+    pred_labels = np.array([int(r[1]) for r in result_list])
+    print(pred_labels.shape)
 
     all_soreces= np.stack([r[2] for r in result_list], axis=0)
     
@@ -78,6 +97,7 @@ def main():
         for classname in classname_list:
             class_idx = int(classname)
             soreces = all_soreces[:, class_idx]
+            soreces[pred_labels==class_idx] = 0
             topk = K - count
             indxs = np.argpartition(soreces, -topk)[-topk:]
             for ind in indxs:
