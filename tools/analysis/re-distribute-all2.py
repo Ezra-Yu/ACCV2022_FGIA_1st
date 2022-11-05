@@ -36,7 +36,7 @@ def extract_data(data_list, L, H):
 
     class2sampleIdx_dict: {classes: sampleidx_list}
     less_count_classes : 被预测次数小于 L 的类别list
-    less_count_classes : 被预测次数大于 H 的类别list
+    large_count_classes : 被预测次数大于 H 的类别list
     
     """
     print(f"{len(data_list)} samples have been found....")
@@ -160,7 +160,7 @@ def main():
     with open(args.out, "w") as csvfile:
         writer = csv.writer(csvfile)
         for result in result_list:
-            if result[0] in data_dictb:
+            if result[0] in data_dictb:         # 只保存testb的结果
                 writer.writerow(result[:2])
 
 
