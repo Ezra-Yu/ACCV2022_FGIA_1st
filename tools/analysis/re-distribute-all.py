@@ -5,13 +5,9 @@ import csv
 import pickle
 import argparse
 from collections import defaultdict
-import torch
-import math
-
-K = 13
-
 
 """
+A 榜上的经验
 8: 7700
 9: 7718
 10: 7729
@@ -23,7 +19,7 @@ K = 13
 经验： 比 total / num_classes 小一点点 
     
     eg. 60000 / 5000 = 12  取 10-11
-        90000 / 1500 = 16  取 14-15
+        90000 / 5000 = 18  取 15-16
 
 """
 
@@ -31,7 +27,9 @@ CLASSES = [f"{i:0>4d}" for i in range(5000)]
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Ensemble Learning')
-    parser.add_argument('pkl', help='Ensemble results')
+    parser.add_argument('pkla', help='Ensemble results')
+    parser.add_argument('pklb', help='Ensemble results')
+    parser.add_argument('--K', type=int, help='Ensemble results')
     parser.add_argument('--out', default="pred_results.csv", help='output path')
     args = parser.parse_args()
     return args
@@ -50,7 +48,7 @@ def post_process(data_dict):
     return result_list
 
 
-def plot_labels2(data_list):
+def plot_labels2(data_list, K):
     data_dict = defaultdict(list)
     for i, (filename, classname, score) in enumerate( data_list ):
         data_dict[classname].append(i)
@@ -77,7 +75,7 @@ def plot_labels2(data_list):
     plt.show()
 
 
-def plot_labels(data):
+def plot_labels(data, K):
     data_list = post_process(data)
 
     print(f"{len(data_list)} samples have been found....")
@@ -111,9 +109,12 @@ def plot_labels(data):
 
 def main():
     args = parse_args()
+    K = args.K
     
-    data_dict = load_pkl(args.pkl)
-    result_list, less_count_classes  = plot_labels(data_dict)
+    data_dicta = load_pkl(args.pkla)
+    data_dictb = load_pkl(args.pklb)
+    data_dict = {**data_dicta, **data_dictb}
+    result_list, less_count_classes  = plot_labels(data_dict, K)
     pred_labels = np.array([int(r[1]) for r in result_list])
     print(pred_labels.shape)
 
@@ -132,12 +133,13 @@ def main():
 
     assert args.out and args.out.endswith(".csv")
     
-    plot_labels2(result_list)
+    plot_labels2(result_list, K)
 
     with open(args.out, "w") as csvfile:
         writer = csv.writer(csvfile)
         for result in result_list:
-            writer.writerow(result[:2])
+            if result[0] in data_dictb:
+                writer.writerow(result[:2])
 
 
 main()
