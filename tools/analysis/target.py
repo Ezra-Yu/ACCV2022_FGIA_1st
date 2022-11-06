@@ -81,7 +81,7 @@ def main():
     assert args.out and args.out.endswith(".txt")
     with open(args.out, "w") as outfile:
         for filename, label in pseudo_list:
-            outfile.write(f"testa/{filename} {label}\n")
+            outfile.write(f"testb/{filename} {label}\n")
 
 if __name__ == '__main__':
     main()

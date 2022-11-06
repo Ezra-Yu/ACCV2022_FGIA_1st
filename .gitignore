@@ -9,6 +9,9 @@
 breakfile.log
 /tmp
 /demo
+/final
+final/
+*.log
 
 /__pycache__
 *.pyc
