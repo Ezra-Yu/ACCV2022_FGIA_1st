@@ -1,0 +1,16 @@
+version: "2.3"
+services:
+  whale:
+    build: docker/
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - PYTHONPATH=/working:$PYTHONPATH
+    container_name: accv
+    tty: true
+    volumes:
+      - $DATA_DIR:/working/data/
+      - $PWD:/working
+    working_dir: /working
+    ipc: host

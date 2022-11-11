@@ -55,7 +55,6 @@ def parse_args():
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
     parser.add_argument('--tta', action='store_true', help='enable tta')
-    parser.add_argument('--ttaug', action='store_true', help='enable tta')
     parser.add_argument(
         '--lt',
         action='store_true',
@@ -112,14 +111,6 @@ def main():
             type='CustomDataset',
             data_prefix=args.folder,
             pipeline=cfg.test_dataloader.dataset.pipeline)
-
-    if args.ttaug:
-        from src.models.classifier_tta import ClassifierTTA
-        from mmcls.models.classifiers import ImageClassifier
-
-        assert isinstance(model, ImageClassifier)
-        model = ClassifierTTA(model)
-        sim_dataloader.dataset['pipeline'] = cfg.tta_pipeline
 
     if args.launcher != 'none' and dist.is_distributed:
         model = MMDistributedDataParallel(

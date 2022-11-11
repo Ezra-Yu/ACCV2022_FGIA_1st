@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import pickle
 import argparse
 import csv
@@ -14,8 +13,8 @@ def parse_args():
     parser.add_argument('--pkls-dir', default=None, help='Ensemble results')
     parser.add_argument('--nopkls', nargs='+', default=[], help='Ensemble results')
     parser.add_argument('--out', default="pred_results.csv", help='output path')
-    parser.add_argument('--dump', default=None, help='dump to results.')
-    parser.add_argument('--dump-all', default=None, help='dump to all results.')
+    parser.add_argument('--dump', default=None, help='dump to list results.')
+    parser.add_argument('--dump-all', default=None, help='dump to all dict results.')
     parser.add_argument('--factor', default=1.0, type=float, help='The factor to scale acc')
     parser.add_argument('--scale', action='store_true')
     args = parser.parse_args()

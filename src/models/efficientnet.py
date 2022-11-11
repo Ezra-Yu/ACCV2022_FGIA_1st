@@ -4,7 +4,7 @@ from mmcls.registry import MODELS
 from timm.models.efficientnet import default_cfgs
 
 
-@MODELS.register_module()
+@MODELS.register_module(force=True)
 class TimmEfficientNet(TIMMBackbone):
     """support torch.utils.checkpoint."""
     def __init__(self, model_name, with_cp=False, **kwargs):

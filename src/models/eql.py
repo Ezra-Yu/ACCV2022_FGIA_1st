@@ -5,7 +5,7 @@ from mmcls.registry import MODELS
 from mmengine.dist import all_reduce as allreduce
 
 
-@MODELS.register_module()
+@MODELS.register_module(force=True)
 class SoftmaxEQLLoss(_Loss):
     def __init__(self, num_classes, indicator='pos', loss_weight=1.0, tau=1.0, eps=1e-4):
         super(SoftmaxEQLLoss, self).__init__()
