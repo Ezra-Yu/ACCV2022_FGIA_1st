@@ -1,8 +1,4 @@
-ARG PYTORCH="1.10.1"
-ARG CUDA="11.1"
-ARG CUDNN="7"
-
-FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
+FROM pytorch/pytorch:1.9.1-cuda11.1-cudnn8-devel
 
 # Avoiding user interaction with libopencv-dev
 ENV DEBIAN_FRONTEND=noninteractive

@@ -1,16 +1,16 @@
-version: "2.3"
+version: '2.4'
+
 services:
-  whale:
+  accv:
     build: docker/
     runtime: nvidia
+    container_name: accv
+    tty: true
+    volumes:
+      - /home/PJLAB/yuzhaohui/repos/ACCV_workshop/:/working
+    working_dir: /working
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
       - PYTHONPATH=/working:$PYTHONPATH
-    container_name: accv
-    tty: true
-    volumes:
-      - $DATA_DIR:/working/data/
-      - $PWD:/working
-    working_dir: /working
     ipc: host

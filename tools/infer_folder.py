@@ -1,16 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import math
 import argparse
 import os
 from pathlib import Path
-from rich.progress import Progress
 from mmengine.utils import ProgressBar
 import mmengine.dist as dist
 from mmengine.device import get_device
 from mmcls.datasets import CustomDataset
 from mmengine.model import MMDistributedDataParallel
 from unittest.mock import patch
-from mmengine.logging import print_log
 import torch
 import src
 
@@ -168,6 +165,7 @@ def output_result(args, result_list):
             # writer.writerow(args.out_keys)
             for result in result_list:
                 writer.writerow([result[k] for k in args.out_keys])
+    
     print(args.dump)
     if args.dump:
         assert args.dump.endswith(".pkl")

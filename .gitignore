@@ -1,4 +1,7 @@
-/data
+/data/ACCV_workshop/train
+/data/ACCV_workshop/testa
+/data/ACCV_workshop/testb
+/data/ACCV_workshop/meta
 /work-dirs
 /work_dirs
 *.pth
