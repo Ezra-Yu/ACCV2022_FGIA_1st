@@ -14,10 +14,6 @@ RUN apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build 
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
-RUN pip install timm==0.6.11 albumentations==1.1.0
-
-
 # Install MMCV
 RUN pip install openmim
 RUN mim install mmengine "mmcv>=2.0rc0"
