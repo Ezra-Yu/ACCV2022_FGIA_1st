@@ -195,6 +195,20 @@ python tools/re-distribute-label.py testb.pkl --K 16
 mkdir pkls
 ```
 
+单个 pkl，生成 pred_result.csv 以及生成 pred_result.zip
+
+```
+python tools/emsemble.py --pkls pkls/XXXXXXXX.pkl
+zip pred_results.zip pred_results.csv
+```
+
+多个 pkl，生成 pred_result.csv 以及生成 pred_result.zip
+
+```
+python tools/emsemble.py --pkls-dir pkls
+zip pred_results.zip pred_results.csv
+```
+
 ## Fine-tuning
 
 以上用于推理的模型都是由 fine-tuning 得到，因为我们所有的模型均为 SwinTransformer 和 ViT, 下面我们分别给出这两者的 fine-tuning 命令:

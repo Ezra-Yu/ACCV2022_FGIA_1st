@@ -232,7 +232,7 @@ model = dict(
         in_channels=1024,
         number_sub_center=3,
         ann_file=
-        '/mnt/petrelfs/share_data/yuzhaohui/ACCV_workshop/round3-train-thr5.txt',
+        './data/ACCV_workshop/meta/rounda3/train.txt',
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0)),
     train_cfg=None)
 file_client_args = dict(

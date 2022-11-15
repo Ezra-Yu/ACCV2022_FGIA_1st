@@ -233,7 +233,7 @@ model = dict(
         num_classes=5000,
         in_channels=1024,
         number_sub_center=3,
-        ann_file='/mnt/cache/liuyuan/research/accv/filter_data/all_new.txt',
+        ann_file='./data/ACCV_workshop/meta/all.txt',
         loss=dict(type='mmcls.CrossEntropyLoss', loss_weight=1.0)),
     train_cfg=None)
 file_client_args = dict(
