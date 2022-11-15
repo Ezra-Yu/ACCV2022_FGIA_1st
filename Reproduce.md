@@ -1,12 +1,21 @@
 # 复现精度
 
 ## 非常重要
-如果在复现的过程中遇到了任何问题，请联系我们，我们的微信号是: Bri_Yuan_Liu, Ezra, zsytony
+如果在复现的过程中遇到了任何问题，请联系我们，我们的微信号是: Bri_Yuan_Liu, yu1105212286, zsytony
 
 
 ## 准备
 
 ### 解压代码以及下载资源
+
+百度网盘
+
+链接: https://pan.baidu.com/s/1SVmwQaVkrUvbySJGYb9q4A 提取码: 2yza
+
+应该会在11/16日凌晨2-3点传完
+
+- checkpoints   17个模型权重  '.pth'
+- testb-pkls    17个testb的推理结果 '.pkl'
 
 ##### 下载pkls
 
@@ -79,7 +88,7 @@ $ACCV_workshop
 3. 下载所有的 meta 文件并解压,如果存在，不需要处理;
     
     ```shell
-    wget -O  "meta.zip" https://tmp-titan.vx-cdn.com/file-6371f3c54bfb1-6371f4801d3c4/meta.zip 
+    wget -O  "meta.zip" https://tmp-titan.vx-cdn.com/file-6373827f4b03a-637396faadc56/meta.zip
     unzip meta.zip
     ```
 
@@ -130,6 +139,7 @@ sudo docker run -it \
     -v $PWD:/workspace/ACCV_workshop \
     -w /workspace/ACCV_workshop \
     --gpus all \
+    --shm-size 128g \
     -e PYTHONPATH=/working:$PYTHONPATH \
     openmmlab:accv  /bin/bash 
 ```
@@ -214,7 +224,7 @@ GPUS_PER_NODE=8 GPUS=16 CPUS_PER_TASK=16 SRUN_ARGS="--preempt --quotatype=reserv
 ### Swin
 
 **所需时间**
-swin-b 需要 8张卡， swin-l 需要 16 张卡； 预估 20 h；
+swin-b 需要 8张卡， swin-l 需要 16 张卡； 预估 15 h；
 
 **预训练**
 使用预训练，都是 21k 上的预训练， 来自[MMCls](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/swin_transformer_v2).

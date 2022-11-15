@@ -24,7 +24,7 @@ Mainly base on [**MMClassifiion**](https://github.com/open-mmlab/mmclassificatio
 ### 算法选择
 
 - ViT(MAE-pt)   # 自己预训练，pt-16A100-1周
-- Swin(21kpt)    
+- Swin(21kpt)   # 来自[MMCls-swin_transformer_v2](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/swin_transformer_v2).
 
 **主要结构**
 - ViT + CE-loss + post-LongTail-Adjusment                # ft-16A100-18h   
