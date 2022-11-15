@@ -65,19 +65,20 @@ do
         name=${checkpoint_path: 17: -9}
         config_path=configs/swin/$name.py
         echo "=> running inference on $checkpoint_path"
-        python -m torch.distributed.launch \
-            --nnodes=$NNODES \
-            --node_rank=$NODE_RANK \
-            --master_addr=$MASTER_ADDR \
-            --nproc_per_node=$GPUS \
-            --master_port=$PORT \
-            tools/infer_folder.py \
-            $config_path \
-            $checkpoint_path \
-            ./data/ACCV_workshop/testb \
-            --dump pkls/$name.pkl \
-            --tta \
-            --cfg-option test_dataloader.batch_size=32 \
-            --launcher pytorch 
+        echo "=> python -m torch.distributed.launch --nnodes=$NNODES --node_rank=$NODE_RANK --master_addr=$MASTER_ADDR --nproc_per_node=$GPUS --master_port=$PORT tools/infer_folder.py $config_path $checkpoint_path ./data/ACCV_workshop/testb --dump pkls/$name.pkl --tta --cfg-option test_dataloader.batch_size=32 --launcher pytorch "
+        # python -m torch.distributed.launch \
+        #     --nnodes=$NNODES \
+        #     --node_rank=$NODE_RANK \
+        #     --master_addr=$MASTER_ADDR \
+        #     --nproc_per_node=$GPUS \
+        #     --master_port=$PORT \
+        #     tools/infer_folder.py \
+        #     $config_path \
+        #     $checkpoint_path \
+        #     ./data/ACCV_workshop/testb \
+        #     --dump pkls/$name.pkl \
+        #     --tta \
+        #     --cfg-option test_dataloader.batch_size=32 \
+        #     --launcher pytorch 
     fi
 done

@@ -54,8 +54,8 @@ $ACCV_workshop
 ├── tools                            # 所有训练测试以及各种工具脚本
 ├── docker/Dockerfile                # docker镜像
 ├── docker-compose.yml
-├── pred_result.csv                   # 生成的.csv文件
-├── pred_result.zip                   # 用于提交的.zip文件 此处为提交的最好结果
+├── submit/pred_result.csv            # 生成的.csv文件
+├── submit/pred_result.zip            # 用于提交的.zip文件 此处为提交的最好结果
 ├── requirements.txt                
 └── README.md
 ```
@@ -131,7 +131,7 @@ sudo docker run -it \
     openmmlab:accv  /bin/bash 
 ```
 
-也可以使用 docker-compose， (以下的命令根据docker-compose修改)
+也可以使用 docker-compose， (如果希望使用，则后面的命令需要根据docker-compose修改)
 
 ```shell
 docker-compose up -d accv
@@ -162,6 +162,7 @@ python tools/emsemble.py --pkls-dir testb-pkls --factor 25 --scale --dump-all te
 ```text
 Number of .pkls is 17....
 Adjusted factor is: [2.080085996252569, 1.3987451430721878, 1.2237077021500773, 1.0626193781723274, 1.1833516629706529, 1.0, 1.764428216037884, 1.0343373472253807, 1.446123660572264, 1.7070722173927184, 1.2781492311812328, 1.269624858196828, 1.017029565305733, 1.6515084398827093, 1.2237077021500773, 1.446123660572264, 1.495040719791741]
+.......
 ```
 
 可以 ```zip pred_results.zip pred_results.csv``` 打包提交得到 **0.7815**, 'testb.pkl' 是临时中间结果，给下面使用。
