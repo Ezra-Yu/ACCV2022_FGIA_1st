@@ -1,5 +1,5 @@
-#!/bin/sh
-set -e
+!/bin/sh
+
 declare -A dict
 dict=(['l-448-arc-rounda3-0.4.pth']="7473" \
       ['l-448-arc-rounda3-0.5.pth']="7418" \
@@ -32,6 +32,7 @@ BATCH_SIZE=${BATCH_SIZE:-32}
 for file in `ls checkpoints`
 do  
     ### ViT ###
+    echo $file
     result=$(echo $file | grep "448")
     echo $result
     if [[ "$result" != "" ]]

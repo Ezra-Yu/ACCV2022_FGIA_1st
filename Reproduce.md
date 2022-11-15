@@ -3,7 +3,34 @@
 
 ## 准备
 
-### 解压代码
+### 解压代码以及下载资源
+
+##### 下载pkls
+
+pkl的目录: 
+
+```shell
+testb-pkls (17个pkl)
+    ├── mae-vit-ce-30e_semi-3st-thres4-7471.pkl       # 7410 为精度，必须加上，
+    ├── mae-vit-ce-30e-testb-3st-7550.pkl             # rounda为LBa提交精度，roundb为估计
+    ├── swin-l-384-arc-rounda3-testb-7400.pkl          
+    ├── vit-448-arc-30e-3st-thr4-semi-7473.pkl  
+    ├── vit-448-arc-30e-testb-3st-7620.pkl
+    ├── mae-vit-ce-30e_semi-3st-thres5-7405.pkl  
+    ├── swin-b-384-arc-roundb1-testb-7410.pkl  
+    ├── swin-l-384-arc-roundb1-testb-7460.pkl  
+    ├── vit-448-arc-30e-3st-thr5-semi-7418.pkl
+    ├── mae-vit-ce-30e-testb-1st-7450.pkl        
+    ├── swin-b-384-arc-roundb2-testb-7460.pkl  
+    ├── swin-l-384-arc-roundb2-testb-7510.pkl  
+    ├── vit-448-arc-30e-testb-1st-7520.pkl
+    ├── mae-vit-ce-30e-testb-2st-7500.pkl     
+    ├── swin-b-384-arc-roundb3-testb-7510.pkl 
+    ├── swin-l-384-arc-roundb3-testb-7560.pkl  
+    ├── vit-448-arc-30e-testb-2st-7570.pkl
+```
+
+##### 下载checkpoints
 
 
 项目结构：
@@ -26,7 +53,9 @@ $ACCV_workshop
 ├── tools                            # 所有训练测试以及各种工具脚本
 ├── docker/Dockerfile                # docker镜像
 ├── docker-compose.yml
-├── requirements.txt
+├── pred_result.csv                   # 生成的.csv文件
+├── pred_result.zip                   # 用于提交的.zip文件 此处为提交的最好结果
+├── requirements.txt                
 └── README.md
 ```
 
@@ -107,17 +136,6 @@ docker-compose up -d accv
 ```
 
 ## 集成以及re-distribute-label (快速得到结果)
-
-pkl的目录: 
-
-```shell
-testb-pkls (17个pkl)
-    ├── swin-b-384-arc-roundb1-testb-7410.pkl         # 7410 为精度，必须加上，
-    ├── swin-b-384-arc-roundb2-testb-7460.pkl         # rounda为LBa提交精度，roundb为估计
-    ├── mae-vit-ce-30e_semi-3st-thres4-7471.pkl        
-    ├── ....
-    └── vit-448-arc-30e-testb-3st-7620.pkl     
-```
 
 **注意**： rounda 的结果都是a榜提交结果; roundb 的 pkl 精度都是预估出来，每次在之前基础上提高0.5， 
 
