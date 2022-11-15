@@ -1,5 +1,8 @@
 # 复现精度
 
+## 非常重要
+如果在复现的过程中遇到了任何问题，请联系我们，我们的微信号是: Bri_Yuan_Liu, Ezra, zsytony
+
 
 ## 准备
 
@@ -175,14 +178,10 @@ python tools/re-distribute-label.py testb.pkl --K 16
 
 ## 推理
 
-上面的 pkl 文件为模型在 testb 上的推理结果，下面我们提供了一个一键推理脚本，可以实现一条命令得到17个模型的推理结果。目前我们只实现了单机多卡，命令如下:
-
+上面的 pkl 文件为模型在 testb 上的推理结果，这个文件 [CMD](./tools/CMD.md) 包含了我们推理的所有命令, 但是首先需要使用以下命令在根目录下创建一个文件夹用于保存推理生成的文件:
 ```shell
-mkdir ./pkls # 创建一个文件夹，用于存放生成的 pkl 文件
-PORT=8888 GPUS=1 BATCH_SIZE=32 bash tools/run_inference.sh
+mkdir pkls
 ```
-
-**Note:** PORT, GPUS, BATCH_SIZE 分别为分布式通讯端口, GPUS 为显卡数量, BATCH_SIZE 为推理的 batch size。这几个参数需要根据实际情况设定。
 
 ## Fine-tuning
 

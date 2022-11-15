@@ -58,3 +58,5 @@ PORT=8888 GPUS=1 BATCH_SIZE=32 bash tools/run_single_inference.sh configs/swin/l
 ```shell
 PORT=8888 GPUS=1 BATCH_SIZE=32 bash tools/run_single_inference.sh configs/swin/l-384-arc-roundb3.py checkpoints/swin-l-384-arc-roundb3-7560.pth pkls/swin-l-384-arc-roundb3-7560.pkl
 ```
+
+**Note:** PORT, GPUS, BATCH_SIZE 分别为分布式通讯端口, GPUS 为显卡数量, BATCH_SIZE 为推理的 batch size。这几个参数需要根据实际情况设定。
