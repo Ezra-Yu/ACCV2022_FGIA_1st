@@ -21,11 +21,16 @@ RUN pip install timm==0.6.11 albumentations==1.1.0
 # Install MMCV
 RUN pip install openmim
 RUN mim install mmengine "mmcv>=2.0rc0"
-RUN mim install 'mmselfsup>=1.0.0rc1'
 
 # Install MMClassification
 RUN conda clean --all
 RUN git clone https://github.com/open-mmlab/mmclassification.git
 WORKDIR ./mmclassification
 RUN git checkout dev-1.x
+RUN pip install --no-cache-dir -e .
+
+# Install MMSelfSup
+RUN git clone https://github.com/YuanLiuuuuuu/mmselfsup.git
+WORKDIR ./mmselfsup
+RUN git checkout accv
 RUN pip install --no-cache-dir -e .
