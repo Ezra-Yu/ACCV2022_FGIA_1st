@@ -4,6 +4,7 @@
 /data/ACCV_workshop/meta
 /work-dirs
 /work_dirs
+pseudo.txt
 *.pth
 *.csv
 *.zip
