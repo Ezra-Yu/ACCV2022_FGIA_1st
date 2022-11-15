@@ -1,6 +1,35 @@
 # ACCA_workshop
 For the competition in https://www.cvmart.net/race/10412/base
 
+## Result
+
+** LB A**
+
+![A](https://user-images.githubusercontent.com/18586273/201299318-41d392b3-a810-4f26-bd29-6dabba92fe83.png)
+
+**LB B**
+
+![B](https://user-images.githubusercontent.com/18586273/201299402-d4449a50-a48a-46e6-b673-049524d81bdb.png)
+
+
+**复现精度请点击[这里](./Reproduce.md)**
+
+
+## Prepare
+
+install mmcv, mmengine, mmselfsup, mmcls
+
+```
+pip install -U openmim
+mim install mmengine
+mim install 'mmcv>=2.0.0rc1'
+pip install "mmcls>=1.0.0rc1"
+pip install 'mmselfsup>=1.0.0rc1'
+```
+
+# ACCA_workshop
+For the competition in https://www.cvmart.net/race/10412/base
+
 
 Mainly base on [**MMClassifiion**](https://github.com/open-mmlab/mmclassification) 与 [**MMSelfSup**](https://github.com/open-mmlab/mmselfsup). Wlcome to use them and star, flork.
 
