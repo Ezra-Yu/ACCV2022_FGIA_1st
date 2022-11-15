@@ -60,10 +60,10 @@ Mainly base on [**MMClassifiion**](https://github.com/open-mmlab/mmclassificatio
 - [ArcFace](https://arxiv.org/abs/1801.07698)   |   [Code](./src/models/arcface_head.py)   about + 0.2 (swin)
 - [SubCenterArcFaceWithAdvMargin](https://paperswithcode.com/paper/sub-center-arcface-boosting-face-recognition)   |   [Code](./src/models/arcface_head.py) about + 0.3 (swin)
 - [Post-LT-adjusment](https://paperswithcode.com/paper/long-tail-learning-via-logit-adjustment)   |   [Code](./src/models/linear_head_lt.py)  about + 0.4 (CE)
-- [SoftMaxEQL](https://paperswithcode.com/paper/the-equalization-losses-gradient-driven)   |   [Code](./src/models/eql.py)   about + 0.2 (Swin)
+- [SoftMaxEQL](https://paperswithcode.com/paper/the-equalization-losses-gradient-driven)   |   [Code](./src/models/eql.py)   about + 0.6 (Swin)
 - FlipTTA  |   [Code](./src/models/tta_classifier.py)    about + 0.2
 - 数据清洗                                                about + 0.5
-- 模型融合: [Uniform-model-soup](https://arxiv.org/abs/2203.05482) | [code](./tools/model_soup.py)             about +0.6 for Swin
+- 模型融合: [Uniform-model-soup](https://arxiv.org/abs/2203.05482) | [code](./tools/model_soup.py)             about +0.4 for Swin
 - [半监督](https://lilianweng.github.io/posts/2021-12-05-semi-supervised/)  | [Code](./tools/creat_pseudo.py)  about +3 for all
 - 自适应集成 [Code](./tools/emsemble.py),                  FROM 7634@A -> 7642@A， 直接集成 7634
 - 后处理: [调整预测分布](./tools/re-distribute-label.py);    FROM 7642@A -> 7732@A 
