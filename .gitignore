@@ -9,6 +9,7 @@ pseudo.txt
 *.csv
 *.zip
 *.json
+*.cfg
 *.pkl
 breakfile.log
 /tmp
