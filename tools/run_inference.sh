@@ -1,4 +1,4 @@
-set -e
+#!/bin/sh
 
 NNODES=${NNODES:-1}
 NODE_RANK=${NODE_RANK:-0}
@@ -11,9 +11,10 @@ GPUS=$1
 for file in `ls checkpoints`
 do  
     ### ViT ###
-    result=$(echo $file | grep "448")
+    result=$(echo "swin" | grep "448")
+    echo $result
     if [[ "$result" != "" ]]
-    then
+    then 
         echo "=> find ViT-448 checkpoint"
         checkpoint_path="checkpoints/$file"
         name=${checkpoint_path: 12: -4}
@@ -32,9 +33,9 @@ do
             --dump pkls/$name.pkl \
             --tta \
             --cfg-option test_dataloader.batch_size=32 \
-            --launcher pytorch
+            --launcher pytorch 
     else
-        echo "find Swin-384 checkpoint"
+        echo "=> find Swin-384 checkpoint"
         # TODO: implement swin here
     fi
 done
