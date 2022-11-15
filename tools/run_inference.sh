@@ -29,3 +29,5 @@ do
            --cfg-option test_dataloader.batch_size=32 \
            --launcher pytorch
 done
+
+################## 2. Run inference with Swin ##################
