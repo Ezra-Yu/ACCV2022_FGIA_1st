@@ -10,7 +10,14 @@ dict=(['l-448-arc-rounda3-0.4.pth']="7473" \
       ['l-448-ce-rounda3-0.5.pth']='7405' \
       ['l-448-ce-roundb1.pth']='7450' \
       ['l-448-ce-roundb2.pth']='7500' \
-      ['l-448-ce-roundb3.pth']='7550')
+      ['l-448-ce-roundb3.pth']='7550' \
+      ['b-384-arc-roundb2.pth']='7460' \
+      ['b-384-arc-roundb1.pth']='7410' \
+      ['b-384-arc-roundb3.pth']='7510' \
+      ['l-384-arc-round2.pth']='7510' \
+      ['l-384-arc-rounda3.pth']='7400' \
+      ['l-384-arc-roundb1.pth']='7460' \
+      ['l-384-arc-roundb3.pth']='7560')
 
 echo ${dict['l-448-ce-roundb3.pth']}
 
