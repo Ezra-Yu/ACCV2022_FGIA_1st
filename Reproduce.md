@@ -48,6 +48,7 @@ $ACCV_workshop
 |        └── ......
 ├── data                             # 数据集
 ├── checkpoints                      # 存放所有的权重
+├── pretrain-checkpoints             # 存放预训练权重
 ├── testb-pkls                       # 存放所有的推理间接结果
 ├── src                              # 所有源代码
 ├── tools                            # 所有训练测试以及各种工具脚本
@@ -137,7 +138,19 @@ docker-compose up -d accv
 
 ## 集成以及re-distribute-label (快速得到结果)
 
-**注意**： rounda 的结果都是a榜提交结果; roundb 的 pkl 精度都是预估出来，每次在之前基础上提高0.5， 
+pkl的目录: 
+
+```shell
+testb-pkls (17个pkl)
+    ├── swin-b-384-arc-roundb1-testb-7410.pkl         # 7410 为精度，必须加上，
+    ├── swin-b-384-arc-roundb2-testb-7460.pkl         # rounda为LBa提交精度，roundb为估计
+    ├── mae-vit-ce-30e_semi-3st-thres4-7471.pkl        
+    ├── ....
+    └── vit-448-arc-30e-testb-3st-7620.pkl     
+```
+
+**注意**： 每个 pkl 文件对应每个模型在 testb 数据集上的推理结果，其每条数据为一个 5000
+维度的向量, 对应该样本属于 5000 类中每一类的概率。 
 
 #### 集成
 
@@ -162,24 +175,40 @@ python tools/re-distribute-label.py testb.pkl --K 16
 
 ## 推理
 
-#### 单机单卡
+上面的 pkl 文件为模型在 testb 上的推理结果，下面我们提供了一个一键推理脚本，可以实现一条命令得到17个模型的推理结果。目前我们只实现了单机多卡，命令如下:
 
 ```shell
-python tools/infer_folder.py configs/swin/l-384-arc_roundb3.py checkpoints/swin-l-384-arc-roundb3-7560.pth ./data/ACCV_workshop/testb --dump pkls/swin-l-384-arc-roundb3-7560.pkl --tta --cfg-option test_dataloader.batch_size=32
+mkdir ./pkls # 创建一个文件夹，用于存放生成的 pkl 文件
+PORT=8888 GPUS=1 BATCH_SIZE=32 bash tools/run_inference.sh
 ```
 
-#### 单机多卡
+**Note:** PORT, GPUS, BATCH_SIZE 分别为分布式通讯端口, GPUS 为显卡数量, BATCH_SIZE 为推理的 batch size。这几个参数需要根据实际情况设定。
 
-```shell
-python -m torch.distributed.launch --nproc_per_node=4  tools/infer_folder.py configs/swin/l-384-arc_roundb3.py checkpoints/swin-l-384-arc-roundb3-7560.pth ./data/ACCV_workshop/testb --dump pkls/swin-l-384-arc-roundb3-7560.pkl --tta --cfg-option test_dataloader.batch_size=32 --launcher pytorch
-```
+## Fine-tuning
 
-**test_dataloader.batch_size=32** batch_size 根据需要修改
-
-
-## 训练
+以上用于推理的模型都是由 fine-tuning 得到，因为我们所有的模型均为 SwinTransformer 和 ViT, 下面我们分别给出这两者的 fine-tuning 命令:
 
 ### ViT
+
+**模型**: ViT-L
+**训练耗时**: 16 卡 80G A100, 预估 20h;
+
+**预训练**: ViT-L 的预训练为 ViT-L 在官方提供的 train+testa 上使用 MAE 预训练 1600e,
+预训练采用了[MMSelfSup](https://github.com/open-mmlab/mmselfsup/tree/1.x), 配置文件为
+ [config](https://github.com/open-mmlab/mmselfsup/blob/1.x/configs/selfsup/mae/mae_vit-large-p16_8xb512-amp-coslr-1600e_in1k.py), 预训练初始化的权重为 [pretrain_init](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k_20220825-cc7e98c9.pth), 预训练得到的权重为 [weight](./pretrain-checkpoints/epoch_1600.pth). PS: 预训练采用 16 卡 80G A100，训练时长大概为一周。
+
+ **PyTorch**
+
+```
+GPUS=16 SRUN_ARGS="--preempt --quotatype=reserved --async" bash tools/mim_slurm_train.sh mm_model configs/vit/l-448-arc-rounda3-0.4.py pretrain-checkpoints/epoch_1600.pth "env_cfg.cudnn_benchmark=True train_dataloader.batch_size=16 train_dataloader.num_workers=16 train_dataloader.persistent_workers=True default_hooks.checkpoint.max_keep_ckpts=1 resume=False"
+```
+
+**Slurm**
+
+```
+GPUS_PER_NODE=8 GPUS=16 CPUS_PER_TASK=16 SRUN_ARGS="--preempt --quotatype=reserved --async" bash tools/mim_slurm_train.sh mm_model configs/vit/l-448-arc-rounda3-0.4.py pretrain-checkpoints/epoch_1600.pth "env_cfg.cudnn_benchmark=True train_dataloader.batch_size=16 train_dataloader.num_workers=16 train_dataloader.persistent_workers=True default_hooks.checkpoint.max_keep_ckpts=1 resume=False"
+```
+
 
 ### Swin
 
@@ -192,7 +221,7 @@ swin-b 需要 8张卡， swin-l 需要 16 张卡； 预估 20 h；
 - [swin-b-21kpt](https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-base-w12_3rdparty_in21k-192px_20220803-f7dc9763.pth)
 - [swin-l-21kpt](https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-large-w12_3rdparty_in21k-192px_20220803-d9073fee.pth)
 
-**Multi GPUS**
+**PyTorch**
 
 ```
 python -m torch.distributed.launch --nproc_per_node=16  tools/train.py configs/swin/l-384-arc_roundb3.py ~/accv/l-384-arc_roundb3  --amp
