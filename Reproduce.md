@@ -126,6 +126,7 @@ sudo docker build -t openmmlab:accv docker/
 sudo docker run -it \
     -v $PWD:/workspace/ACCV_workshop \
     -w /workspace/ACCV_workshop \
+    --gpus all \
     -e PYTHONPATH=/working:$PYTHONPATH \
     openmmlab:accv  /bin/bash 
 ```
