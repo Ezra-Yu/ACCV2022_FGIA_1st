@@ -23,14 +23,14 @@ Mainly base on [**MMClassifiion**](https://github.com/open-mmlab/mmclassificatio
 
 ### 算法选择
 
-- ViT(MAE-pt)   # 自己预训练，pt-16A100-1周，
+- ViT(MAE-pt)   # 自己预训练，pt-16A100-1周
 - Swin(21kpt)    
 
 **主要结构**
 - ViT + CE-loss + post-LongTail-Adjusment                # ft-16A100-18h   
 - ViT + SubCenterArcFaceWithAdvMargin(CE)                # ft-16A100-18h
-- Swin-B + SubCenterArcFaceWithAdvMargin(Soft-EQL)       # ft-8A100-16h
-- Swin-L + SubCenterArcFaceWithAdvMargin(Soft-EQL)       # ft-16A100-13h
+- Swin-B + SubCenterArcFaceWithAdvMargin(SoftMax-EQL)    # ft-8A100-16h
+- Swin-L + SubCenterArcFaceWithAdvMargin(SoftMAx-EQL)    # ft-16A100-13h
 
 所有都使用了 **Flip TTA**。
 
@@ -40,20 +40,13 @@ Mainly base on [**MMClassifiion**](https://github.com/open-mmlab/mmclassificatio
 
 1. MAE 预训练
 2. Swin 与 ViT 的训练
-3. 数据清洗         
-4. Swin 与 ViT 的训练 rounda1
-5. 制作伪标签testa1
-6. Swin 与 ViT 的训练 rounda2
-7. 使用新的CKPT继续做伪标签testa2
-8. Swin 与 ViT 的训练 rounda3
-9. 提交testb，做伪标签testb1
-10. Swin 与 ViT 的训练 roundb1
-11. 提交testb，做伪标签testb2
-12. Swin 与 ViT 的训练 roundb1
-13. 模型融合，调整预测的标签分布，提交
+3. 使用权重做数据清洗         
+4. 训练 -> 制作伪标签，放回训练集中 -> 再训练； (testa3轮)
+5. 训练 -> 制作伪标签，放回训练集中 -> 再训练； (testb3轮,包括testa的伪标签)
+6. 模型融合，调整预测的标签分布，提交
 
 
-## 技术总结 tricks summary
+## 技术总结 summary
 
 - [MAE](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/configs/selfsup/mae) |  [Config](./configs/vit/)    | best 7460@A
 - [Swinv2](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/swin_transformer_v2) | [Config](./configs/swin/)  | best 7400@A
