@@ -1,9 +1,5 @@
 # 复现精度
 
-## 非常重要
-如果在复现的过程中遇到了任何问题，请联系我们，我们的微信号是: Bri_Yuan_Liu, yu1105212286, zsytony
-
-
 ## 准备
 
 ### 解压代码以及下载资源
@@ -129,13 +125,13 @@ data/ACCV_workshop
 构建镜像：
 
 ```
-sudo docker build -t openmmlab:accv docker/
+docker build -t openmmlab:accv docker/
 ```
 
 启动容器：
 
 ```
-sudo docker run -it \
+docker run -it \
     -v $PWD:/workspace/ACCV_workshop \
     -w /workspace/ACCV_workshop \
     --gpus all \
