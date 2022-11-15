@@ -94,7 +94,7 @@ sudo docker build -t openmmlab:accv docker/
 
 ```
 sudo docker run -it \
-    -v /home/PJLAB/yuzhaohui/repos/ACCV_workshop:/workspace/ACCV_workshop \
+    -v $PWD:/workspace/ACCV_workshop \
     -w /workspace/ACCV_workshop \
     -e PYTHONPATH=/working:$PYTHONPATH \
     openmmlab:accv  /bin/bash 
@@ -112,14 +112,14 @@ pkl的目录:
 
 ```shell
 testb-pkls (17个pkl)
-    ├── swin-b-384-arc-roundb1-testb-7410.pkl         # 需要在最后加上精度
-    ├── swin-b-384-arc-roundb2-testb-7460.pkl
+    ├── swin-b-384-arc-roundb1-testb-7410.pkl         # 7410 为精度，必须加上，
+    ├── swin-b-384-arc-roundb2-testb-7460.pkl         # rounda为LBa提交精度，roundb为估计
     ├── mae-vit-ce-30e_semi-3st-thres4-7471.pkl        
     ├── ....
     └── vit-448-arc-30e-testb-3st-7620.pkl     
 ```
 
-**注意**： roundb 的 pkl 精度都是预估出来，每次在之前基础上提高0.5， roundb1 的结果都是a榜提交结果
+**注意**： rounda 的结果都是a榜提交结果; roundb 的 pkl 精度都是预估出来，每次在之前基础上提高0.5， 
 
 #### 集成
 
@@ -134,7 +134,7 @@ Adjusted factor is: [2.080085996252569, 1.3987451430721878, 1.2237077021500773, 
 
 可以 ```zip pred_results.zip pred_results.csv``` 打包提交得到 **0.7815**, 'testb.pkl' 是临时中间结果，给下面使用。
 
-#### re-distribute-label
+#### re-distribute-label (调整预测的分布)
 
 ```
 python tools/re-distribute-label.py testb.pkl --K 16
@@ -165,7 +165,14 @@ python -m torch.distributed.launch --nproc_per_node=4  tools/infer_folder.py con
 
 ### Swin
 
-swin-b 需要 8张卡， swin-l 需要 16 张卡；
+**所需时间**
+swin-b 需要 8张卡， swin-l 需要 16 张卡； 预估 20 h；
+
+**预训练**
+使用预训练，都是 21k 上的预训练， 来自[MMCls](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/swin_transformer_v2).
+
+- [swin-b-21kpt](https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-base-w12_3rdparty_in21k-192px_20220803-f7dc9763.pth)
+- [swin-l-21kpt](https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-large-w12_3rdparty_in21k-192px_20220803-d9073fee.pth)
 
 **Multi GPUS**
 
@@ -179,7 +186,7 @@ python -m torch.distributed.launch --nproc_per_node=16  tools/train.py configs/s
 GPUS=16 sh ./tools/slurm_train.sh ${CLUSTER_NAME} ${JOB_NAME} configs/swin/l-384-arc_roundb3.py ~/accv/l-384-arc_roundb3 --amp
 ```
 
-### Uniform Model Soup
+#### Uniform Model Soup
 
 融合训练得到的模型， swin-b 融合最后 5个， swin-l 融合 最后的 7 个。将需要的checkpoint 放在一个文件夹中。使用以下命令
 
@@ -187,7 +194,7 @@ GPUS=16 sh ./tools/slurm_train.sh ${CLUSTER_NAME} ${JOB_NAME} configs/swin/l-384
 python tools/model_soup.py --model-folder ${CKPT-DIR} --out ${Final-CKPT}
 ```
 
-### Create Pseudo Label
+## 伪标签
 
 Get needed inter-result
 
@@ -209,3 +216,4 @@ Get 78458 pseudo samples....
    区别为生成的 'pseudo.txt' 中的图片路径前缀不同，分别为 'testb' 和 'testa'
 3. 生成的 'pseudo.txt' 需要和之前的训练标注合并起来才能使用
 4. 想使用必须在 './data/ACCV_workshop/train' 建立 'testa' 与 'testb' 的软连接。
+5. roundax 使用训练集与testa伪标签训练，roundbx 使用训练集与testa与testb伪标签训练，
