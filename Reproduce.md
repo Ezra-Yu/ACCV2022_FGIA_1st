@@ -81,10 +81,11 @@ $ACCV_workshop
     ln -s ./testb train/testb
     ```
 
-3. 下载所有的 meta 文件并解压,如果存在，不需要处理;
+3. 下载所有的 meta 文件并解压,如果存在，不需要处理; (也可以从网盘下载： 链接: https://pan.baidu.com/s/1SVmwQaVkrUvbySJGYb9q4A 提取码: 2yza)
     
     ```shell
-    wget -O  "meta.zip" https://tmp-titan.vx-cdn.com/file-6373827f4b03a-637396faadc56/meta.zip
+    # wget -O  "meta.zip" https://tmp-titan.vx-cdn.com/file-6373827f4b03a-637396faadc56/meta.zip
+    wget -O  "meta.zip" https://tmp-titan.vx-cdn.com/file-637f01a37561f-637f023c53309/meta.zip
     unzip meta.zip
     ```
 
