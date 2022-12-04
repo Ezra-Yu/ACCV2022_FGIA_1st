@@ -28,7 +28,7 @@ def compute_adjustment(ann_file, tro=1):
     return adjustments
 
 
-@MODELS.register_module()
+@MODELS.register_module(force=True)
 class LinearClsHeadWithAdjustment(LinearClsHead):
     """Linear classifier head.
 

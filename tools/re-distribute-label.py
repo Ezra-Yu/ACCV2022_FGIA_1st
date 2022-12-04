@@ -1,25 +1,25 @@
-from pydoc import classname
-from readline import append_history_file
 import numpy as np
 import csv
 import pickle
 import argparse
 from collections import defaultdict
 
+
+
 """
-A 榜上的经验
-8: 7700
-9: 7718
-10: 7729
-11: 7732
-12: 7700  
-13: 7599
+LB-A:
+    8: 7700
+    9: 7718
+    10: 7729
+    11: 7732
+    12: 7700  
+    13: 7599
 
 
-经验： 比 total / num_classes 小一点点 
+Exp: a little smaller than int(total / num_classes) 
     
-    eg. 60000 / 5000 = 12  取 10-11
-        90000 / 5000 = 18  取 15-16
+    eg. 60000 / 5000 = 12  use 10-11
+        90000 / 5000 = 18  use 15-16
 
 """
 
@@ -27,8 +27,7 @@ CLASSES = [f"{i:0>4d}" for i in range(5000)]
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Ensemble Learning')
-    parser.add_argument('pkla', help='Ensemble results')
-    parser.add_argument('pklb', help='Ensemble results')
+    parser.add_argument('pkl', help='Ensemble results')
     parser.add_argument('--K', type=int, help='Ensemble results')
     parser.add_argument('--out', default="pred_results.csv", help='output path')
     args = parser.parse_args()
@@ -111,9 +110,7 @@ def main():
     args = parse_args()
     K = args.K
     
-    data_dicta = load_pkl(args.pkla)
-    data_dictb = load_pkl(args.pklb)
-    data_dict = {**data_dicta, **data_dictb}
+    data_dict = load_pkl(args.pkl)
     result_list, less_count_classes  = plot_labels(data_dict, K)
     pred_labels = np.array([int(r[1]) for r in result_list])
     print(pred_labels.shape)
@@ -138,8 +135,6 @@ def main():
     with open(args.out, "w") as csvfile:
         writer = csv.writer(csvfile)
         for result in result_list:
-            if result[0] in data_dictb:
-                writer.writerow(result[:2])
-
+            writer.writerow(result[:2])
 
 main()

@@ -10,7 +10,7 @@ from mmengine.model import BaseModule
 from mmcls.registry import MODELS
 
 
-@MODELS.register_module()
+@MODELS.register_module(force=True)
 class LinearReduction(BaseModule):
     """Neck with Dimension reduction.
     Args:

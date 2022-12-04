@@ -2,79 +2,78 @@
 For the competition in https://www.cvmart.net/race/10412/base
 
 
-## Prepare
+Mainly base on [**MMClassifiion**](https://github.com/open-mmlab/mmclassification) 与 [**MMSelfSup**](https://github.com/open-mmlab/mmselfsup). Wlcome to use them and star, flork.
 
-install mmcv, mmengine, mmselfsup, mmcls
+## Result / 结果
 
-```
-pip install -U openmim
-mim install mmengine
-mim install 'mmcv>=2.0.0rc1'
-pip install "mmcls>=1.0.0rc1"
-pip install 'mmselfsup>=1.0.0rc1'
-```
+** LB A**
 
-## Get Submit Result in S2
+![A](https://user-images.githubusercontent.com/18586273/201299318-41d392b3-a810-4f26-bd29-6dabba92fe83.png)
 
-### Slurm
+**LB B**
 
-```
-GPUS=1 GPUS_PER_NODE=1 sh ./tools/slurm_infer.sh mm_model accv_test ${CONFIG} ${CHECKPOINT} ${TEST_IMAGE_FOLDER}
-```
-
-output `pred_results.csv` and `pred_results.zip`, just submit `pred_results.zip`.
+![B](https://user-images.githubusercontent.com/18586273/201299402-d4449a50-a48a-46e6-b673-049524d81bdb.png)
 
 
+## Reproduce / 复现
 
-## How to inference 
+**复现精度请点击[这里](./Reproduce.md)**
 
-### Local
+## 算法描述
 
-```
-python -u tools/infer_folder.py ${CONFIG} ${CHECKPOINT} ${FOLDER} --out-keys filename pred_class --out pred_results.csv
-```
+### 算法选择
 
-### Slurm
+- ViT(MAE-pt)   # 自己预训练，pt-16A100-1周
+- Swin(21kpt)   # 来自[MMCls-swin_transformer_v2](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/swin_transformer_v2).
 
-```
-GPUS=1 GPUS_PER_NODE=1 sh ./tools/slurm_infer.sh mm_model accv_test ${CONFIG} ${CHECKPOINT} ${TEST_IMAGE_FOLDER}
-```
+**主要结构**
+- ViT + CE-loss + post-LongTail-Adjusment                # ft-16A100-18h   
+- ViT + SubCenterArcFaceWithAdvMargin(CE)                # ft-16A100-18h
+- Swin-B + SubCenterArcFaceWithAdvMargin(SoftMax-EQL)    # ft-8A100-16h
+- Swin-L + SubCenterArcFaceWithAdvMargin(SoftMAx-EQL)    # ft-16A100-13h
 
-output `pred_results.csv` and `pred_results.zip`, just submit `pred_results.zip`.
+所有都使用了 **Flip TTA**。
 
-### TTA
-```
-GPUS=1 GPUS_PER_NODE=1 sh ./tools/slurm_infer.sh mm_model accv_test ${CONFIG} ${CHECKPOINT} ${TEST_IMAGE_FOLDER} --tta
-```
+## 复现步骤
 
-### DUMP
+预训练 --> 训练 --> 清洗数据 --> 训练与生成伪标签交替 --> 模型集成 --> 调整预测分布
 
-dump all the result, including scores to do emsemble
+1. MAE 预训练
+2. Swin 与 ViT 的训练
+3. 使用权重做数据清洗         
+4. 训练 -> 制作伪标签，放回训练集中 -> 再训练； (testa3轮)
+5. 训练 -> 制作伪标签，放回训练集中 -> 再训练； (testb3轮,包括testa的伪标签)
+6. 模型融合，调整预测的标签分布，提交
 
-```
-GPUS=1 GPUS_PER_NODE=1 sh ./tools/slurm_infer.sh mm_model accv_test ${CONFIG} ${CHECKPOINT} ${TEST_IMAGE_FOLDER} --tta --dump ${DUMP_PATH}
-```
 
-### Check
+## 技术总结 summary
 
-You can infernece a train subfolder to check model validity, the filename contains the label infomation, like
+- [MAE](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/configs/selfsup/mae) |  [Config](./configs/vit/)    | best 7460@A
+- [Swinv2](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/swin_transformer_v2) | [Config](./configs/swin/)  | best 7400@A
+- [ArcFace](https://arxiv.org/abs/1801.07698)   |   [Code](./src/models/arcface_head.py)   about + 0.2 (swin)
+- [SubCenterArcFaceWithAdvMargin](https://paperswithcode.com/paper/sub-center-arcface-boosting-face-recognition)   |   [Code](./src/models/arcface_head.py) about + 0.3 (swin)
+- [Post-LT-adjusment](https://paperswithcode.com/paper/long-tail-learning-via-logit-adjustment)   |   [Code](./src/models/linear_head_lt.py)  about + 0.4 (CE)
+- [SoftMaxEQL](https://paperswithcode.com/paper/the-equalization-losses-gradient-driven)   |   [Code](./src/models/eql.py)   about + 0.6 (Swin)
+- FlipTTA  |   [Code](./src/models/tta_classifier.py)    about + 0.2
+- 数据清洗                                                about + 0.5
+- 模型融合: [Uniform-model-soup](https://arxiv.org/abs/2203.05482) | [code](./tools/model_soup.py)             about +0.4 for Swin
+- [半监督](https://lilianweng.github.io/posts/2021-12-05-semi-supervised/)  | [Code](./tools/creat_pseudo.py)  about +3 for all
+- 自适应集成 [Code](./tools/emsemble.py),                  FROM 7634@A -> 7642@A， 直接集成 7634
+- 后处理: [调整预测分布](./tools/re-distribute-label.py);    FROM 7642@A -> 7732@A 
+- 
 
-```
-GPUS=1 GPUS_PER_NODE=1 sh ./tools/slurm_infer.sh mm_model accv_test configs/liuyuan.py ~/accv/liuyuan/mae_webnat_1600e_pt_50e_ft_ckpt/epoch_50.pth ./data/ACCV_workshop/train/0002/
-```
+#### 使用了没有效果 used but no improvement
 
-the result will be like :
+1. 使用检索以及检索分类混合的方式
+2. 使用EfficientNet
 
-```
- 0002_0fcdce76ec165d97b61bb2463355f05df8287775.jpg,0002         
- 0002_c282d27f595010ec1b04bd2d79d7fa280598ed74.jpg,0002       
- 0002_e9f23d9ab4217d8322a7521712d8bef0464cc031.jpg,0002
- ....
-```
+#### 后续 not used but worth try
 
-## How to train and test
+1. DiVE 蒸馏提升长尾问题表现
+2. Simim 训一个 swinv2 的预训练模型
+3. 优化 re-distribute-label
 
-**Remember to change the test dataset to val**
+## 参考
 
-detial refer to [MMCLS DOC](https://mmclassification.readthedocs.io/en/1.x/user_guides/train_test.html#training)
+
 

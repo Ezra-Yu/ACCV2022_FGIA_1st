@@ -3,8 +3,9 @@ from torch.nn.modules.loss import _Loss
 import torch.nn.functional as F
 import mmengine
 import numpy as np
+from mmcls.registry import MODELS
 
-
+@MODELS.register_module(force=True)
 class BalancedSoftmax(_Loss):
     """
     Balanced Softmax Loss

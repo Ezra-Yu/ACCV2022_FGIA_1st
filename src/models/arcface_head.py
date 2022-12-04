@@ -5,10 +5,8 @@ from typing import List, Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-try:
-    from torch import autocast
-except:
-    from torch.cuda.amp import autocast
+from mmengine.runner import autocast
+
 import numpy as np
 import mmengine
 
@@ -20,6 +18,7 @@ from mmcls.models.heads.cls_head import ClsHead
 class NormLinear(nn.Linear):
     """An enhanced linear layer, which could normalize the input and the linear
     weight.
+
     Args:
         in_features (int): size of each input sample.
         out_features (int): size of each output sample
@@ -93,7 +92,7 @@ class SubCenterNormLinear(nn.Linear):
         return cosine
 
 
-@MODELS.register_module()
+@MODELS.register_module(force=True)
 class ArcFaceClsHead(ClsHead):
     """ArcFace classifier head.
     Args:
@@ -154,7 +153,7 @@ class ArcFaceClsHead(ClsHead):
         feature of a backbone stage. In ``ArcFaceHead``, we just obtain the
         feature of the last stage.
         """
-        # The ArcFaceHead doesn't have other module, just return after
+        # The ArcFaceClsHead doesn't have other module, just return after
         # unpacking.
         if isinstance(feats, tuple):
             return feats[-1]
@@ -197,6 +196,7 @@ class ArcFaceClsHead(ClsHead):
     def loss(self, feats: Tuple[torch.Tensor],
              data_samples: List[ClsDataSample], **kwargs) -> dict:
         """Calculate losses from the classification score.
+
         Args:
             feats (tuple[Tensor]): The features extracted from the backbone.
                 Multiple stage inputs are acceptable but only the last stage
@@ -227,7 +227,7 @@ class ArcFaceClsHead(ClsHead):
         return losses
 
 
-@MODELS.register_module()
+@MODELS.register_module(force=True)
 class ArcFaceClsHeadAdaptiveMargin(ClsHead):
     """ArcFace classifier head.
     Args:

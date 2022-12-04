@@ -1,16 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import math
 import argparse
 import os
 from pathlib import Path
-from rich.progress import Progress
 from mmengine.utils import ProgressBar
 import mmengine.dist as dist
 from mmengine.device import get_device
 from mmcls.datasets import CustomDataset
 from mmengine.model import MMDistributedDataParallel
 from unittest.mock import patch
-from mmengine.logging import print_log
 import torch
 import src
 
@@ -55,7 +52,6 @@ def parse_args():
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
     parser.add_argument('--tta', action='store_true', help='enable tta')
-    parser.add_argument('--ttaug', action='store_true', help='enable tta')
     parser.add_argument(
         '--lt',
         action='store_true',
@@ -113,14 +109,6 @@ def main():
             data_prefix=args.folder,
             pipeline=cfg.test_dataloader.dataset.pipeline)
 
-    if args.ttaug:
-        from src.models.classifier_tta import ClassifierTTA
-        from mmcls.models.classifiers import ImageClassifier
-
-        assert isinstance(model, ImageClassifier)
-        model = ClassifierTTA(model)
-        sim_dataloader.dataset['pipeline'] = cfg.tta_pipeline
-
     if args.launcher != 'none' and dist.is_distributed:
         model = MMDistributedDataParallel(
             module=model,
@@ -177,6 +165,7 @@ def output_result(args, result_list):
             # writer.writerow(args.out_keys)
             for result in result_list:
                 writer.writerow([result[k] for k in args.out_keys])
+    
     print(args.dump)
     if args.dump:
         assert args.dump.endswith(".pkl")

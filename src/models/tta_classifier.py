@@ -5,7 +5,7 @@ from mmcls.registry import MODELS
 from mmcls.models import ImageClassifier
 
 
-@MODELS.register_module()
+@MODELS.register_module(force=True)
 class TTAImageClassifier(ImageClassifier):
     def __init__(self, tta=True, **kwargs):
         super().__init__(**kwargs)
