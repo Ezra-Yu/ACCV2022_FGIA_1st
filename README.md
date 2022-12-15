@@ -46,7 +46,7 @@ Mainly done by [Ezra-Yu](https://github.com/Ezra-Yu), [Yuan Liu](https://github.
 
 ## Flow
 
-预训练 --> 训练 --> 清洗数据 --> 训练与生成伪标签交替 --> 模型集成 --> 调整预测分布
+MIM 预训练 --> 训练 --> 清洗数据 --> fine-tune + 集成 + 生成伪标签交替训练 --> 后处理
 
 1. MAE 预训练
 2. Swin 与 ViT 的训练
@@ -59,18 +59,18 @@ Mainly done by [Ezra-Yu](https://github.com/Ezra-Yu), [Yuan Liu](https://github.
 
 ## Summary
 
-- [MAE](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/configs/selfsup/mae) |  [Config](./configs/vit/)    | best 7460@A
-- [Swinv2](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/swin_transformer_v2) | [Config](./configs/swin/)  | best 7400@A
-- [ArcFace](https://arxiv.org/abs/1801.07698)   |   [Code](./src/models/arcface_head.py)   about + 0.2 (swin)
-- [SubCenterArcFaceWithAdvMargin](https://paperswithcode.com/paper/sub-center-arcface-boosting-face-recognition)   |   [Code](./src/models/arcface_head.py) about + 0.3 (swin)
-- [Post-LT-adjusment](https://paperswithcode.com/paper/long-tail-learning-via-logit-adjustment)   |   [Code](./src/models/linear_head_lt.py)  about + 0.4 (CE)
-- [SoftMaxEQL](https://paperswithcode.com/paper/the-equalization-losses-gradient-driven)   |   [Code](./src/models/eql.py)   about + 0.6 (Swin)
-- FlipTTA  |   [Code](./src/models/tta_classifier.py)    about + 0.2
-- 数据清洗                                                about + 0.5
-- 模型融合: [Uniform-model-soup](https://arxiv.org/abs/2203.05482) | [code](./tools/model_soup.py)             about +0.4 for Swin
-- [半监督](https://lilianweng.github.io/posts/2021-12-05-semi-supervised/)  | [Code](./tools/creat_pseudo.py)  about +3 for all
-- 自适应集成 [Code](./tools/emsemble.py),                  FROM 7634@A -> 7642@A， 直接集成 7634
-- 后处理: [调整预测分布](./tools/re-distribute-label.py);    FROM 7642@A -> 7732@A 
+- [MAE](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/configs/selfsup/mae) |  [Config](./configs/vit/)  
+- [Swinv2](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/swin_transformer_v2) | [Config](./configs/swin/) 
+- [ArcFace](https://arxiv.org/abs/1801.07698)   |   [Code](./src/models/arcface_head.py)  
+- [SubCenterArcFaceWithAdvMargin](https://paperswithcode.com/paper/sub-center-arcface-boosting-face-recognition)   |   [Code](./src/models/arcface_head.py) 
+- [Post-LT-adjusment](https://paperswithcode.com/paper/long-tail-learning-via-logit-adjustment)   |   [Code](./src/models/linear_head_lt.py) 
+- [SoftMaxEQL](https://paperswithcode.com/paper/the-equalization-losses-gradient-driven)   |   [Code](./src/models/eql.py)   
+- FlipTTA  |   [Code](./src/models/tta_classifier.py)   
+- 数据清洗                                                
+- 模型融合: [Uniform-model-soup](https://arxiv.org/abs/2203.05482) | [code](./tools/model_soup.py)            
+- [半监督](https://lilianweng.github.io/posts/2021-12-05-semi-supervised/)  | [Code](./tools/creat_pseudo.py)  
+- 自适应集成 [Code](./tools/emsemble.py),                  
+- 后处理: [调整预测分布](./tools/re-distribute-label.py);    
 
 
 ![image](https://user-images.githubusercontent.com/18586273/205498027-def99b0d-a99a-470b-b292-8d5fc83111fc.png)
