@@ -4,6 +4,8 @@ This is the 1st Place Solution for Webly-supervised Fine-grained Recognition, re
 
 Mainly done by [Ezra-Yu](https://github.com/Ezra-Yu), [Yuan Liu](https://github.com/YuanLiuuuuuu) and [Songyang Zhang](https://github.com/tonysy), base on [**MMClassifiion**](https://github.com/open-mmlab/mmclassification) 与 [**MMSelfSup**](https://github.com/open-mmlab/mmselfsup). please flork and star them if you think they are useful.
 
+**[Lecture](https://www.bilibili.com/video/BV13M411S7b5/?spm_id_from=333.337.search-card.all.click)** and **[slide](https://github.com/Ezra-Yu/ACCV_STORE/releases/download/v0.0.1/ACCV_FGIA_1st_PPT.pdf)** are available.
+
 ## Result
 
 <details>
