@@ -6,6 +6,10 @@ Mainly done by [Ezra-Yu](https://github.com/Ezra-Yu), [Yuan Liu](https://github.
 
 **[Lecture](https://www.bilibili.com/video/BV13M411S7b5/?spm_id_from=333.337.search-card.all.click)** and **[slide](https://github.com/Ezra-Yu/ACCV_STORE/releases/download/v0.0.1/ACCV_FGIA_1st_PPT.pdf)** are available.
 
+#### Note:
+
+Tricks ([`AdaptiveSubCenterArcFace`](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/arcface), `EQL_Loss`, `Post-Hoc_LT_Adjusment`, `Uniform_Model_Soup`) have been or will be implemented in [MMClassifiion](https://github.com/open-mmlab/mmclassification).
+
 ## Result
 
 <details>
